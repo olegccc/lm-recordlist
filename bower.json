@@ -1,0 +1,41 @@
+{
+  "name": "lm-recordlist",
+  "main": "release/lm-recordlist.js",
+  "version": "0.0.0",
+  "authors": [
+    "olegccc"
+  ],
+  "description": "lm-recordlist",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "angularjs",
+    "record list"
+  ],
+  "license": "MPL-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "build",
+    "config",
+    "src",
+    "typings",
+    "Gruntfile.js",
+    ".baseDir.ts"
+  ],
+  "dependencies": {
+    "angularjs": "~1.4.1",
+    "angular-translate": "~2.7.2",
+    "angular-messages": "~1.4.1",
+    "angular-material": "~0.10.0",
+    "angular-touch": "~1.4.1",
+    "angular": "~1.4.1"
+  },
+  "devDependencies": {
+    "domready": "~1.0.8",
+    "requirejs": "~2.1.18"
+  }
+}

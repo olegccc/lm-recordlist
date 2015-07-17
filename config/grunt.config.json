@@ -1,0 +1,122 @@
+{
+  "ts": {
+    "options": {
+      "fast": "never",
+      "target": "es3",
+      "module": "amd",
+      "declaration": false,
+      "failOnTypeErrors": true,
+      "sourceMap": false,
+      "removeComments": false
+    },
+    "build": {
+      "files":
+      {
+        "build/lm-recordlist.js": [
+          "src/modules/**/*.ts",
+          "src/templates/**/*.ts",
+          "src/datatypes/**/*.ts",
+          "src/interfaces/**/*.ts",
+          "src/services/**/*.ts",
+          "src/**/*.ts",
+          "typings/tsd.d.ts"
+        ]
+      }
+    },
+    "tests": {
+      "files": [
+        {
+          "src": [
+            "./test/app/**/*.ts",
+            "./typings/tsd.d.ts",
+            "./test/specs/**/*.ts"
+          ],
+          "dest": "./build"
+        }
+      ]
+    }
+  },
+  "uglify": {
+    "options": {
+      "mangle": {
+        "except": [
+          "angular"
+        ]
+      }
+    },
+    "default": {
+      "files": {
+        "./release/lm-recordlist.min.js": "./release/lm-recordlist.js"
+      }
+    }
+  },
+  "connect": {
+    "options": {
+      "port": 9090,
+      "base": "."
+    },
+    "start": {
+    },
+    "keepalive": {
+      "options": {
+        "keepalive": true
+      }
+    },
+    "examples": {
+      "options": {
+        "keepalive": true
+      }
+    }
+  },
+  "copy": {
+    "interfaces": {
+      "expand": true,
+      "cwd": "src/interfaces",
+      "src": "*",
+      "dest": "release/interfaces/",
+      "filter": "isFile"
+    }
+  },
+  "protractor": {
+    "options": {
+      "configFile": "./config/protractor.config.js",
+      "args": {
+        "specs": ["build/test/specs/**/*Spec.js"],
+        "seleniumAddress": "http://localhost:4444/wd/hub",
+        "framework": "jasmine2",
+        "browser": "firefox",
+        "verbose": true
+      }
+    },
+    "default": {
+    }
+  },
+  "clean": {
+    "build": ["build"],
+    "post-build": ["src/**/*.js", "!src/bootstrap/*.js"]
+  },
+  "wrap-jade": {
+    "default": {
+      "files": [
+        { "src": ["**/*.jade", "!**/_*.jade"], "cwd": "src", "expand": true}
+      ],
+      "output": "src/templates/templates.ts"
+    }
+  },
+  "wrap-module": {
+    "default": {
+      "files": [
+        { "src": "build/lm-recordlist.js", "dest": "release/lm-recordlist.js" }
+      ],
+      "modules": {
+        "angular": "angular",
+        "angular.animate": "",
+        "angular.translate": "",
+        "angular.messages": "",
+        "angular.material": "",
+        "angular.aria": "",
+        "angular.touch": ""
+      }
+    }
+  }
+}
