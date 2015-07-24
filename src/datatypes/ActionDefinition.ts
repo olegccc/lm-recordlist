@@ -4,6 +4,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+/**
+ * @file ActionDefinition.ts
+ * @author Oleg Gordeev
+ */
+
 class ActionDefinition {
     visible: string;
     type: string;

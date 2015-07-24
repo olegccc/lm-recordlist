@@ -19,7 +19,8 @@
           "src/interfaces/**/*.ts",
           "src/services/**/*.ts",
           "src/**/*.ts",
-          "typings/tsd.d.ts"
+          "typings/tsd.d.ts",
+          "bower_components/lm-webforms/release/interfaces/*.ts"
         ]
       }
     },

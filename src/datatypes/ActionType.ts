@@ -4,6 +4,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+/**
+ * @file ActionType.ts
+ * @author Oleg Gordeev
+ */
+
 class ActionType {
     public static RECORD = "RECORD";
     public static RECORD_CREATE = "RECORD_CREATE";

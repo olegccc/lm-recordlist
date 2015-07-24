@@ -10,14 +10,11 @@
  */
 
 interface ModelDefinition {
-    columns: ColumnDefinition[];
-    links: LinkDefinition[];
-    optionsTemplate: string;
+    columns: Array<ColumnDefinition>;
+    links: Array<LinkDefinition>;
     manualRefresh: boolean;
     hasSearch: boolean;
-    actions: ActionDefinition[];
+    actions: Array<ActionDefinition>;
     type: string;
-    recordIds: number[];
-    records: Record[];
     extensionScript: string;
 }
