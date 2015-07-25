@@ -11,9 +11,9 @@
 
 class Action {
     name: string;
-    type: string;
+    title: string;
     visible: Function;
     parameter: string;
-    text: string;
+    type: string;
     visibleFunction: Function;
 }

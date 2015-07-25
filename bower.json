@@ -33,7 +33,7 @@
     "angular-material": "~0.10.0",
     "angular-touch": "~1.4.1",
     "angular": "~1.4.1",
-    "lm-webforms": "~0.0.4"
+    "lm-webforms": "~0.0.8"
   },
   "devDependencies": {
     "domready": "~1.0.8",

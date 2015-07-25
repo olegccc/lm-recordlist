@@ -13,7 +13,7 @@
 
 interface RecordListDirectiveScope extends ng.IScope {
     model: string;
-    channel: IDataChannel;
+    channel: IDataChannelFactory;
     actionHandler: (actionName: string, dataObject: any) => ng.IPromise<any>;
     pageHandler: (page?: string) => string;
 
@@ -33,7 +33,6 @@ interface RecordListDirectiveScope extends ng.IScope {
     pageCount: number;
     tableColumns: number;
     actions: Action[];
-    links: LinkDefinition[];
     columns: ColumnDefinition[];
     hasOptionsBar: boolean;
     showOptions: boolean;
@@ -52,7 +51,7 @@ interface RecordListDirectiveScope extends ng.IScope {
 class RecordListDirectiveLink {
 
     private dataDefinition: ModelDefinition;
-    private configuration: ModuleConfiguration;
+    private configuration: IRecordListConfiguration;
     private scope: RecordListDirectiveScope;
     private currentRecordId: number;
     private currentRecord: Record;
@@ -65,7 +64,7 @@ class RecordListDirectiveLink {
 
     constructor(
         scope:RecordListDirectiveScope,
-        configuration: ModuleConfiguration,
+        configuration: IRecordListConfiguration,
         httpService: ng.IHttpService,
         qService: ng.IQService) {
 
@@ -254,7 +253,7 @@ class RecordListDirectiveLink {
 
         this.hideOptions();
 
-        var field = column.name;
+        var field = column.property;
 
         this.dataChannelController.sort(field, current);
         this.dataChannelController.showPage(1);
@@ -265,7 +264,7 @@ class RecordListDirectiveLink {
         this.configuration.editRecord(record, (record) => {
             var deferred: ng.IDeferred<void> = this.qService.defer<void>();
 
-            this.scope.channel.writeRecords([record])
+            this.dataChannelController.writeRecords([record])
                 .then(() => {
                     deferred.resolve();
                 }, (message: string) => {
@@ -359,13 +358,13 @@ class RecordListDirectiveLink {
     }
 }
 
-recordListModule.directive("recordList", ['moduleConfiguration', '$http', '$q',
-    (configuration: ModuleConfiguration, httpService: ng.IHttpService, qService: ng.IQService) => {
+recordListModule.directive("recordList", ['recordListConfiguration', '$http', '$q',
+    (configuration: IRecordListConfiguration, httpService: ng.IHttpService, qService: ng.IQService) => {
     return {
         restrict: 'EA',
         template: templates['views/recordList.jade'],
         scope: {
-            model: '=',
+            model: '@',
             channel: '=',
             actionHandler: '=',
             pageHandler: '='

@@ -21,21 +21,17 @@ class ScopeConfiguration {
         this.scope.updating = false;
         this.scope.recordSearchVisible = false;
         this.scope.recordSearchText = "";
-        this.scope.links = [];
         this.scope.columns = [];
         this.scope.hasRecordSearch = false;
     }
 
     public onDataDefinitionLoaded(dataDefinition: ModelDefinition) {
 
-        this.scope.links = dataDefinition.links;
-        this.scope.columns = dataDefinition.columns;
         this.scope.hasRecordSearch = dataDefinition.hasSearch;
-        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0 || this.scope.links.length > 0);
-
+        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0);
+        this.initializeColumns(dataDefinition);
         this.initializeActions(dataDefinition);
         this.initializeColumnScopes();
-        this.initializeColumns();
     }
 
     private initializeColumnScopes() {
@@ -50,8 +46,15 @@ class ScopeConfiguration {
     }
 
     private initializeActions(dataDefinition: ModelDefinition) {
-        dataDefinition.actions.forEach((action: ActionDefinition) => {
 
+        this.scope.actions = [];
+
+        if (!dataDefinition.actions) {
+            return;
+        }
+
+        Object.keys(dataDefinition.actions).forEach((name) => {
+            var action = dataDefinition.actions[name];
             var visibleFunction : Function;
 
             if (action.visible && action.visible.length > 0) {
@@ -65,8 +68,8 @@ class ScopeConfiguration {
                 case ActionType.RECORD_CREATE:
                 case ActionType.RECORD_INITIALIZE_CREATE:
                     var target = new Action();
-                    target.name = action.name;
-                    target.text = action.text;
+                    target.name = name;
+                    target.title = action.title;
                     target.visible = visibleFunction;
                     target.type = action.type;
                     target.parameter = action.parameter;
@@ -74,8 +77,8 @@ class ScopeConfiguration {
                     break;
                 case ActionType.CREATE:
                     var target = new Action();
-                    target.name = action.name;
-                    target.text = action.text;
+                    target.name = name;
+                    target.title = action.title;
                     target.visible = visibleFunction;
                     target.type = action.parameter;
                     this.scope.toolbarButtons.push(target);
@@ -84,10 +87,18 @@ class ScopeConfiguration {
         });
     }
 
-    private initializeColumns() {
+    private initializeColumns(dataDefinition: ModelDefinition) {
 
-        for (var i = 0; i < this.scope.columns.length; i++) {
-            var column = this.scope.columns[i];
+        this.scope.columns = [];
+
+        if (!dataDefinition.columns) {
+            return;
+        }
+
+        Object.keys(dataDefinition.columns).forEach((key) => {
+            var column = dataDefinition.columns[key];
+            column.property = key;
+            this.scope.columns.push(column);
             this.scope.tableColumns += column.colSpan;
             if (!column.headerClass) {
                 column.headerClass = "";
@@ -118,7 +129,7 @@ class ScopeConfiguration {
             }
 
             if (!column.template || column.template.length === 0) {
-                var value = "data." + column.name;
+                var value = "data." + column.title;
                 var bind = "ng-bind";
                 if (column.allowUnsafe) {
                     value = "getSafeValue(" + value + ")";
@@ -131,6 +142,6 @@ class ScopeConfiguration {
                     column.template = "<span " + bind + "=\"" + value + "\"></span>";
                 }
             }
-        }
+        });
     }
 }

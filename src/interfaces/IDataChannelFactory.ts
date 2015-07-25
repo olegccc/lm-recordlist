@@ -5,13 +5,11 @@
  */
 
 /**
- * @file ActionDefinition.ts
+ * @file IDataChannelFactory.ts
  * @author Oleg Gordeev
  */
 
-class ActionDefinition {
-    visible: string;
-    type: string;
-    title: string;
-    parameter: string;
+interface IDataChannelFactory {
+    subscribe: (listener: IDataChannelListener) => IDataChannel;
+    unsubscribe: (channel: IDataChannel) => void;
 }

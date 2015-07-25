@@ -1,0 +1,21 @@
+{
+  "title": "Edit record",
+  "fields": {
+    "field1": {
+      "title": "Field1",
+      "type": "text"
+    },
+    "field2": {
+      "title": "Field2",
+      "type": "text"
+    }
+  },
+  "columns": {
+    "field1": {
+      "title": "Field1"
+    },
+    "field2": {
+      "title": "Field2"
+    }
+  }
+}

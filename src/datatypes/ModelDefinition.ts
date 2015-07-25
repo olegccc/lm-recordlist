@@ -10,11 +10,9 @@
  */
 
 interface ModelDefinition {
-    columns: Array<ColumnDefinition>;
-    links: Array<LinkDefinition>;
+    columns: { [property: string]: ColumnDefinition };
     manualRefresh: boolean;
     hasSearch: boolean;
-    actions: Array<ActionDefinition>;
-    type: string;
+    actions: { [name: string] : ActionDefinition };
     extensionScript: string;
 }

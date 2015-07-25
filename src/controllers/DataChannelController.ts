@@ -4,9 +4,10 @@ class DataChannelController implements IDataChannelListener {
     private records: Record[];
     private pageConfiguration: PageConfiguration;
     private manualRefresh: boolean;
-    private moduleConfiguration: ModuleConfiguration;
+    private moduleConfiguration: IRecordListConfiguration;
+    private channel: IDataChannel;
 
-    constructor(scope: RecordListDirectiveScope, pageConfiguration: PageConfiguration, moduleConfiguration: ModuleConfiguration) {
+    constructor(scope: RecordListDirectiveScope, pageConfiguration: PageConfiguration, moduleConfiguration: IRecordListConfiguration) {
 
         this.scope = scope;
         this.records = [];
@@ -17,11 +18,15 @@ class DataChannelController implements IDataChannelListener {
         this.subscribeToChannel();
     }
 
+    public writeRecords(records: IRecord[]): ng.IPromise<void> {
+        return this.channel.writeRecords(records);
+    }
+
     public subscribeToChannel() {
-        var token = this.scope.channel.subscribe(this);
+        this.channel = this.scope.channel.subscribe(this);
 
         this.scope.$on('$destroy', () => {
-            this.scope.channel.unsubscribe(token);
+            this.scope.channel.unsubscribe(this.channel);
         });
     }
 
@@ -53,7 +58,7 @@ class DataChannelController implements IDataChannelListener {
     }
 
     public refreshNewRecords() {
-        this.scope.channel.readIds().then((recordIds: any[]) => {
+        this.channel.readIds().then((recordIds: any[]) => {
             this.onRecordIdsReceived(recordIds);
         });
     }
@@ -128,7 +133,7 @@ class DataChannelController implements IDataChannelListener {
         record.loaded = false;
 
         this.scope.columns.forEach((column: ColumnDefinition) => {
-            record[column.name] = "";
+            record[column.property] = "";
         });
 
         record.id = recordId;
@@ -146,7 +151,7 @@ class DataChannelController implements IDataChannelListener {
         }
 
         if (unloadedRecords !== 0) {
-            this.scope.channel.readIdsSortedBy(field, direction)
+            this.channel.sortByAndReadIds(field, direction === "down")
                 .then((recordIds: number[]) => {
                     this.resetRecords(recordIds);
                 }, (message: string) => {
@@ -248,7 +253,7 @@ class DataChannelController implements IDataChannelListener {
 
     private updateVisibleRecords(recordIds, page) {
 
-        this.scope.channel.readRecords(recordIds)
+        this.channel.readRecords(recordIds)
             .then((data: any) => {
                 this.scope.updating = false;
                 this.updateRecords(data);

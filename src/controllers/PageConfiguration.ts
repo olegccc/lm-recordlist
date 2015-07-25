@@ -7,7 +7,7 @@ class PageConfiguration {
     private itemsPerPage: number;
     private pageCount: number;
 
-    constructor(configuration: ModuleConfiguration) {
+    constructor(configuration: IRecordListConfiguration) {
         this.defaultPageSize = configuration.pageSize;
 
         if (this.defaultPageSize <= 0) {

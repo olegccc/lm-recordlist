@@ -105,20 +105,6 @@ var LinkDefinition = (function () {
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 /**
- * @file ModuleConfiguration.ts
- * @author Oleg Gordeev
- */
-var ModuleConfiguration = (function () {
-    function ModuleConfiguration() {
-    }
-    return ModuleConfiguration;
-})();
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-/**
  * @file Record.ts
  * @author Oleg Gordeev
  */
@@ -142,6 +128,21 @@ var Record = (function () {
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+var RecordListConfigurationService = (function () {
+    function RecordListConfigurationService() {
+        this.editRecord = null;
+        this.navigate = null;
+        this.pageSize = 10;
+        this.errorHandler = null;
+    }
+    return RecordListConfigurationService;
+})();
+recordListModule.service('recordListConfiguration', [RecordListConfigurationService]);
 var DataChannelController = (function () {
     function DataChannelController(scope, pageConfiguration, moduleConfiguration) {
         this.scope = scope;
@@ -151,11 +152,14 @@ var DataChannelController = (function () {
         this.manualRefresh = false;
         this.subscribeToChannel();
     }
+    DataChannelController.prototype.writeRecords = function (records) {
+        return this.channel.writeRecords(records);
+    };
     DataChannelController.prototype.subscribeToChannel = function () {
         var _this = this;
-        var token = this.scope.channel.subscribe(this);
+        this.channel = this.scope.channel.subscribe(this);
         this.scope.$on('$destroy', function () {
-            _this.scope.channel.unsubscribe(token);
+            _this.scope.channel.unsubscribe(_this.channel);
         });
     };
     DataChannelController.prototype.onRecordIdsReceived = function (recordIds) {
@@ -182,7 +186,7 @@ var DataChannelController = (function () {
     };
     DataChannelController.prototype.refreshNewRecords = function () {
         var _this = this;
-        this.scope.channel.readIds().then(function (recordIds) {
+        this.channel.readIds().then(function (recordIds) {
             _this.onRecordIdsReceived(recordIds);
         });
     };
@@ -244,7 +248,7 @@ var DataChannelController = (function () {
         var record = new Record();
         record.loaded = false;
         this.scope.columns.forEach(function (column) {
-            record[column.name] = "";
+            record[column.property] = "";
         });
         record.id = recordId;
         return record;
@@ -259,7 +263,7 @@ var DataChannelController = (function () {
             }
         }
         if (unloadedRecords !== 0) {
-            this.scope.channel.readIdsSortedBy(field, direction)
+            this.channel.sortByAndReadIds(field, direction === "down")
                 .then(function (recordIds) {
                 _this.resetRecords(recordIds);
             }, function (message) {
@@ -341,7 +345,7 @@ var DataChannelController = (function () {
     };
     DataChannelController.prototype.updateVisibleRecords = function (recordIds, page) {
         var _this = this;
-        this.scope.channel.readRecords(recordIds)
+        this.channel.readRecords(recordIds)
             .then(function (data) {
             _this.scope.updating = false;
             _this.updateRecords(data);
@@ -432,18 +436,15 @@ var ScopeConfiguration = (function () {
         this.scope.updating = false;
         this.scope.recordSearchVisible = false;
         this.scope.recordSearchText = "";
-        this.scope.links = [];
         this.scope.columns = [];
         this.scope.hasRecordSearch = false;
     };
     ScopeConfiguration.prototype.onDataDefinitionLoaded = function (dataDefinition) {
-        this.scope.links = dataDefinition.links;
-        this.scope.columns = dataDefinition.columns;
         this.scope.hasRecordSearch = dataDefinition.hasSearch;
-        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0 || this.scope.links.length > 0);
+        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0);
+        this.initializeColumns(dataDefinition);
         this.initializeActions(dataDefinition);
         this.initializeColumnScopes();
-        this.initializeColumns();
     };
     ScopeConfiguration.prototype.initializeColumnScopes = function () {
         this.scope.columns.forEach(function (column) {
@@ -458,7 +459,12 @@ var ScopeConfiguration = (function () {
     };
     ScopeConfiguration.prototype.initializeActions = function (dataDefinition) {
         var _this = this;
-        dataDefinition.actions.forEach(function (action) {
+        this.scope.actions = [];
+        if (!dataDefinition.actions) {
+            return;
+        }
+        Object.keys(dataDefinition.actions).forEach(function (name) {
+            var action = dataDefinition.actions[name];
             var visibleFunction;
             if (action.visible && action.visible.length > 0) {
                 visibleFunction = new Function("obj", "with(obj) { return " + action.visible + "; }");
@@ -471,8 +477,8 @@ var ScopeConfiguration = (function () {
                 case ActionType.RECORD_CREATE:
                 case ActionType.RECORD_INITIALIZE_CREATE:
                     var target = new Action();
-                    target.name = action.name;
-                    target.text = action.text;
+                    target.name = name;
+                    target.title = action.title;
                     target.visible = visibleFunction;
                     target.type = action.type;
                     target.parameter = action.parameter;
@@ -480,8 +486,8 @@ var ScopeConfiguration = (function () {
                     break;
                 case ActionType.CREATE:
                     var target = new Action();
-                    target.name = action.name;
-                    target.text = action.text;
+                    target.name = name;
+                    target.title = action.title;
                     target.visible = visibleFunction;
                     target.type = action.parameter;
                     _this.scope.toolbarButtons.push(target);
@@ -489,10 +495,17 @@ var ScopeConfiguration = (function () {
             }
         });
     };
-    ScopeConfiguration.prototype.initializeColumns = function () {
-        for (var i = 0; i < this.scope.columns.length; i++) {
-            var column = this.scope.columns[i];
-            this.scope.tableColumns += column.colSpan;
+    ScopeConfiguration.prototype.initializeColumns = function (dataDefinition) {
+        var _this = this;
+        this.scope.columns = [];
+        if (!dataDefinition.columns) {
+            return;
+        }
+        Object.keys(dataDefinition.columns).forEach(function (key) {
+            var column = dataDefinition.columns[key];
+            column.property = key;
+            _this.scope.columns.push(column);
+            _this.scope.tableColumns += column.colSpan;
             if (!column.headerClass) {
                 column.headerClass = "";
             }
@@ -520,7 +533,7 @@ var ScopeConfiguration = (function () {
                 column.cellClass += " ignore-options";
             }
             if (!column.template || column.template.length === 0) {
-                var value = "data." + column.name;
+                var value = "data." + column.title;
                 var bind = "ng-bind";
                 if (column.allowUnsafe) {
                     value = "getSafeValue(" + value + ")";
@@ -533,7 +546,7 @@ var ScopeConfiguration = (function () {
                     column.template = "<span " + bind + "=\"" + value + "\"></span>";
                 }
             }
-        }
+        });
     };
     return ScopeConfiguration;
 })();
@@ -711,7 +724,7 @@ var RecordListDirectiveLink = (function () {
         }
         column.sort = current;
         this.hideOptions();
-        var field = column.name;
+        var field = column.property;
         this.dataChannelController.sort(field, current);
         this.dataChannelController.showPage(1);
     };
@@ -719,7 +732,7 @@ var RecordListDirectiveLink = (function () {
         var _this = this;
         this.configuration.editRecord(record, function (record) {
             var deferred = _this.qService.defer();
-            _this.scope.channel.writeRecords([record])
+            _this.dataChannelController.writeRecords([record])
                 .then(function () {
                 deferred.resolve();
             }, function (message) {
@@ -802,13 +815,13 @@ var RecordListDirectiveLink = (function () {
     };
     return RecordListDirectiveLink;
 })();
-recordListModule.directive("recordList", ['moduleConfiguration', '$http', '$q',
+recordListModule.directive("recordList", ['recordListConfiguration', '$http', '$q',
     function (configuration, httpService, qService) {
         return {
             restrict: 'EA',
             template: templates['views/recordList.jade'],
             scope: {
-                model: '=',
+                model: '@',
                 channel: '=',
                 actionHandler: '=',
                 pageHandler: '='
@@ -818,57 +831,4 @@ recordListModule.directive("recordList", ['moduleConfiguration', '$http', '$q',
             }
         };
     }]);
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-/**
- * @file ToolBarDirective.ts
- * @author Oleg Gordeev
- */
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-/**
- * @file Smile.ts
- * @author Oleg Gordeev
- */
-/**
- * @class Smile
- */
-var Smile = (function () {
-    function Smile() {
-    }
-    return Smile;
-})();
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-///<reference path="./Smile.ts" />
-///<reference path="./IDataSource.ts" />
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-} if (typeof define === 'function' && define.amd) { define(["angular","angular.animate","angular.translate","angular.messages","angular.material","angular.aria","angular.touch"], function (angular,$_v0,$_v1,$_v2,$_v3,$_v4,$_v5) { ___f$(angular); }); } else if (typeof exports === 'object') { var angular = require('angular');require('angular.animate');require('angular.translate');require('angular.messages');require('angular.material');require('angular.aria');require('angular.touch'); module.exports = ___f$(angular); } else  { ___f$(angular); } })();
+} if (typeof define === 'function' && define.amd) { define(["angular","angular.animate","angular.translate","angular.messages","angular.material","angular.aria","angular.touch"], function ($_v0,$_v1,$_v2,$_v3,$_v4,$_v5,$_v6) { ___f$($_v0); }); } else if (typeof exports === 'object') { var $_v0 = require('angular');require('angular.animate');require('angular.translate');require('angular.messages');require('angular.material');require('angular.aria');require('angular.touch'); module.exports = ___f$($_v0); } else  { ___f$(window['angular']); } })();

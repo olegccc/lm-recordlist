@@ -10,7 +10,8 @@
  */
 
 class ColumnDefinition {
-    name: string;
+    property: string;
+    title: string;
     colSpan: number;
     scope: string;
     context: (obj: Record) => any;

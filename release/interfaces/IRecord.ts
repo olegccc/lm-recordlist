@@ -10,5 +10,5 @@
  */
 
 interface IRecord {
-    id: number;
+    id: any;
 }

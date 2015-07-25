@@ -10,8 +10,7 @@
       "removeComments": false
     },
     "build": {
-      "files":
-      {
+      "files": {
         "build/lm-recordlist.js": [
           "src/modules/**/*.ts",
           "src/templates/**/*.ts",
@@ -19,22 +18,19 @@
           "src/interfaces/**/*.ts",
           "src/services/**/*.ts",
           "src/**/*.ts",
-          "typings/tsd.d.ts",
-          "bower_components/lm-webforms/release/interfaces/*.ts"
+          "typings/tsd.d.ts"
         ]
       }
     },
     "tests": {
-      "files": [
-        {
-          "src": [
-            "./test/app/**/*.ts",
-            "./typings/tsd.d.ts",
-            "./test/specs/**/*.ts"
-          ],
-          "dest": "./build"
-        }
-      ]
+      "files": {
+        "build/test-app.js": [
+          "test/**/*.ts",
+          "typings/tsd.d.ts",
+          "release/interfaces/*.ts",
+          "bower_components/lm-webforms/release/interfaces/*.ts"
+        ]
+      }
     }
   },
   "uglify": {
@@ -82,7 +78,9 @@
     "options": {
       "configFile": "./config/protractor.config.js",
       "args": {
-        "specs": ["build/test/specs/**/*Spec.js"],
+        "specs": [
+          "build/test/specs/**/*Spec.js"
+        ],
         "seleniumAddress": "http://localhost:4444/wd/hub",
         "framework": "jasmine2",
         "browser": "firefox",
@@ -93,13 +91,25 @@
     }
   },
   "clean": {
-    "build": ["build"],
-    "post-build": ["src/**/*.js", "!src/bootstrap/*.js"]
+    "build": [
+      "build"
+    ],
+    "post-build": [
+      "src/**/*.js",
+      "!src/bootstrap/*.js"
+    ]
   },
   "wrap-jade": {
     "default": {
       "files": [
-        { "src": ["**/*.jade", "!**/_*.jade"], "cwd": "src", "expand": true}
+        {
+          "src": [
+            "**/*.jade",
+            "!**/_*.jade"
+          ],
+          "cwd": "src",
+          "expand": true
+        }
       ],
       "output": "src/templates/templates.ts"
     }
@@ -107,7 +117,10 @@
   "wrap-module": {
     "default": {
       "files": [
-        { "src": "build/lm-recordlist.js", "dest": "release/lm-recordlist.js" }
+        {
+          "src": "build/lm-recordlist.js",
+          "dest": "release/lm-recordlist.js"
+        }
       ],
       "modules": {
         "angular": "angular",

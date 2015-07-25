@@ -1,0 +1,32 @@
+doctype html
+html(lang='en' ng-app='test')
+    head
+        title Test Page
+        link(href="/bower_components/angular-material/angular-material.css", rel="stylesheet", type="text/css")
+        link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+    body(ng-controller='test')
+        md-content
+            h2 Record list #1
+            record-list#id1(
+                model="/test/models/recordModel"
+                channel="dataChannel"
+                action-handler="actionHandler"
+                page-handler="pageHandler"
+                )
+            h2 Record list #2
+            record-list#id2(
+                model="/test/models/recordModel"
+                channel="dataChannel"
+                action-handler="actionHandler"
+                page-handler="pageHandler"
+                )
+        script(type="text/javascript", src="/bower_components/angular/angular.js")
+        script(type="text/javascript", src="/bower_components/angular-animate/angular-animate.js")
+        script(type="text/javascript", src="/bower_components/angular-aria/angular-aria.js")
+        script(type="text/javascript", src="/bower_components/angular-messages/angular-messages.js")
+        script(type="text/javascript", src="/bower_components/angular-touch/angular-touch.js")
+        script(type="text/javascript", src="/bower_components/angular-translate/angular-translate.js")
+        script(type="text/javascript", src="/bower_components/angular-material/angular-material.js")
+        script(type="text/javascript", src="/bower_components/lm-webforms/release/lm-webforms.js")
+        script(type="text/javascript", src="/release/lm-recordlist.js")
+        script(type="text/javascript", src="/build/test-app.js")
