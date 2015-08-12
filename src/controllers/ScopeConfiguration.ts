@@ -129,7 +129,7 @@ class ScopeConfiguration {
             }
 
             if (!column.template || column.template.length === 0) {
-                var value = "data." + column.title;
+                var value = "data." + column.property;
                 var bind = "ng-bind";
                 if (column.allowUnsafe) {
                     value = "getSafeValue(" + value + ")";

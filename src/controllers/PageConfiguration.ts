@@ -57,13 +57,13 @@ class PageConfiguration {
             localPage = this.pageCount > 0 ? this.pageCount : 1;
         }
 
-        var pageOffset = (localPage - 1) * this.defaultPageSize;
+        this.pageOffset = (localPage - 1) * this.defaultPageSize;
         var pageSize = this.defaultPageSize;
 
         if (this.pageCount === 0) {
             this.pageSize = 0;
-        } else if (pageOffset + pageSize > this.totalItems) {
-            this.pageSize = this.totalItems - pageOffset;
+        } else if (this.pageOffset + pageSize > this.totalItems) {
+            this.pageSize = this.totalItems - this.pageOffset;
         }
 
     }

@@ -13,31 +13,33 @@ div(layout="row")
             ="{{ 'Main.GetNewRecords' | translate }}"
 
     pagination.pagination-sm.pagination-top(
-    ng-show="showPagination"
-    items-per-page="itemsPerPage"
-    boundary-links="true"
-    direction-links="true"
-    total-items="totalItems"
-    ng-model="currentPageNumeric"
-    previous-text="&lsaquo;" next-text="&rsaquo;"
-    first-text="&laquo;"
-    last-text="&raquo;"
-    max-size="paginationItems"
-    ng-class="{ 'grid-refreshing' : updating }"
+        ng-show="showPagination"
+        items-per-page="itemsPerPage"
+        boundary-links="true"
+        direction-links="true"
+        total-items="totalItems"
+        ng-model="currentPageNumeric"
+        previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;"
+        last-text="&raquo;"
+        max-size="paginationItems"
+        ng-class="{ 'grid-refreshing' : updating }"
     )
 
-    table.grid-control(ng-class="{ 'show-options' : showOptions, 'has-options' : hasOptionsBar, 'grid-refreshing' : updating }")
+    table.grid-control(
+        ng-class="{ 'show-options' : showOptions, 'has-options' : hasOptionsBar, 'grid-refreshing' : updating }"
+    )
         tr
             th(
-            ng-repeat="column in columns"
-            width="{{column.width}}"
-            colspan="{{column.colSpan}}"
-            class="{{column.headerClass}}"
+                ng-repeat="column in columns"
+                width="{{column.width}}"
+                colspan="{{column.colSpan}}"
+                class="{{column.headerClass}}"
             )
                 span(
-                ng-click="sortColumn(column)"
-                ng-bind="column.text | translate"
-                ng-class="{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }"
+                    ng-click="sortColumn(column)"
+                    ng-bind="column.title | translate"
+                    ng-class="{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }"
                 )
                 span.toggle-search-button(ng-if="hasRecordSearch && column == columns[columns.length-1]")
                     ng-button(ng-click="toggleRecordSearch()")
@@ -56,33 +58,36 @@ div(layout="row")
 
         tr(ng-repeat="row in rows" ng-class="{ 'odd': row.isOdd }")
             td.grid-cell-options(
-            ng-if="hasOptionsBar"
-            ng-class="columns[0].cellClass"
-            cell-show-options=''
-            ng-click="onClickOptions(row, null, $event)"
+                ng-if="hasOptionsBar"
+                ng-class="columns[0].cellClass"
+                cell-show-options=''
+                ng-click="onClickOptions(row, null, $event)"
             )
                 span
 
             td(
-            ng-repeat="column in columns"
-            bind-cell="column" row="row"
-            ng-class="column.cellClass"
-            cell-show-options=""
-            ng-click="onClickOptions(row, column, $event)")
+                ng-repeat="column in columns"
+                bind-cell="column"
+                row="row"
+                ng-class="column.cellClass"
+                cell-show-options=""
+                ng-click="onClickOptions(row, column, $event)"
+            )
 
     pagination.pagination-sm(
-    ng-show="showPagination"
-    items-per-page="itemsPerPage"
-    boundary-links="true"
-    direction-links="true"
-    total-items="totalItems"
-    ng-model="currentPageNumeric"
-    previous-text="&lsaquo;"
-    next-text="&rsaquo;"
-    first-text="&laquo;"
-    last-text="&raquo;"
-    max-size="paginationItems"
-    ng-class="{ 'grid-refreshing' : updating }")
+        ng-show="showPagination"
+        items-per-page="itemsPerPage"
+        boundary-links="true"
+        direction-links="true"
+        total-items="totalItems"
+        ng-model="currentPageNumeric"
+        previous-text="&lsaquo;"
+        next-text="&rsaquo;"
+        first-text="&laquo;"
+        last-text="&raquo;"
+        max-size="paginationItems"
+        ng-class="{ 'grid-refreshing' : updating }"
+    )
 
     .grid-control-panel-bottom(ng-if="toolbarButtons.length > 0")
         md-button.md-default.md-raised(

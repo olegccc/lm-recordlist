@@ -41,7 +41,7 @@ class TestDataStorage implements IDataChannelFactory {
         var deferred = this.qService.defer<IRecord[]>();
 
         var records = [];
-        ids.forEach(function(id) {
+        ids.forEach((id) => {
             var record = this.records[id];
             if (record) {
                 records.push(record);

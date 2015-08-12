@@ -10,7 +10,14 @@ class TestController {
 
     constructor(scope: TestControllerScope, webForms: IWebFormsService, qService: ng.IQService, recordListConfiguration: IRecordListConfiguration) {
         this.webForms = webForms;
-        scope.dataChannel = new TestDataStorage(qService);
+        var dataStorage = new TestDataStorage(qService);
+        scope.dataChannel = dataStorage;
+        var record1 = new TestRecord();
+        record1.field1 = "abc";
+        record1.field2 = "def";
+        dataStorage.writeRecords(null, [
+            record1
+        ]);
         scope.actionHandler = null;
         scope.pageHandler = null;
 

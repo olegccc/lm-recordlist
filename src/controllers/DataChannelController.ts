@@ -54,6 +54,8 @@ class DataChannelController implements IDataChannelListener {
             this.records.push(record);
         });
 
+        this.pageConfiguration.setRecordCount(this.records.length);
+
         this.loadVisibleRecords();
     }
 
@@ -126,6 +128,8 @@ class DataChannelController implements IDataChannelListener {
             var record = this.createNewRecord(recordId);
             this.records.push(record);
         }
+
+        this.pageConfiguration.setRecordCount(this.records.length);
     }
 
     private createNewRecord(recordId: number): Record {
@@ -220,6 +224,7 @@ class DataChannelController implements IDataChannelListener {
         }
 
         var rows: Record[] = [];
+        var rowIds: number[] = [];
 
         this.pageConfiguration.setCurrentPage(page);
 
@@ -227,13 +232,13 @@ class DataChannelController implements IDataChannelListener {
 
         visibleRecords.forEach(function(record: Record) {
             if (!record.loaded) {
-                rows.push(record);
+                rowIds.push(record.id);
             }
         });
 
-        if (rows.length > 0) {
+        if (rowIds.length > 0) {
             this.scope.updating = true;
-            this.updateVisibleRecords(rows, page);
+            this.updateVisibleRecords(rowIds, page);
             return;
         }
 
