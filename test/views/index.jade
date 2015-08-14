@@ -4,7 +4,8 @@ html(lang='en' ng-app='test')
         title Test Page
         link(href="/bower_components/angular-material/angular-material.css", rel="stylesheet", type="text/css")
         link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
-    body(ng-controller='test')
+        link(href="/release/lm-recordlist.css" rel="stylesheet")
+    body(ng-controller='test' style="padding: 1em")
         md-content
             h2 Record list #1
             record-list#id1(

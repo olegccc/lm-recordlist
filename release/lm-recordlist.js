@@ -16,9 +16,10 @@ var recordListModule = angular.module('lm-recordlist', [
 ]);
 var templates = {
     "views/optionsBar.jade": "<tr ng-show=\"showOptions\" class=\"options-panel\"><td colspan=\"{{columns.length+1}}\"><md-button ng-disabled=\"!isActionVisible(action)\" ng-repeat=\"action in actions\" ng-bind=\"action.text | translate\" ng-click=\"executeAction(action)\" aria-label=\"action.text | translate\" class=\"md-primary md-raised\"></md-button><span ng-repeat=\"link in links\"><node-link ng-if=\"!link.external\" path=\"{{linkUrl(link)}}\" ng-bind=\"link.text | translate\" class=\"btn btn-info\"></node-link><a ng-if=\"link.external\" href=\"{{linkUrl(link)}}\" ng-bind=\"link.text | translate\" class=\"btn btn-info\"></a></span></td></tr>",
-    "views/paging.jade": "",
-    "views/recordList.jade": "<div layout=\"row\"><div ng-if=\"toolbarButtons.length &gt; 0\" class=\"grid-control-panel-top\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.text | translate\" class=\"md-default md-raised\"></md-button></div><div ng-if=\"manualRefresh\" class=\"recordlist-refresh-panel\"><md-button ng-click=\"refreshNewRecords()\" ng-show=\"hasNewRecords\" class=\"md-primary\">{{ 'Main.GetNewRecords' | translate }}</md-button></div><pagination ng-show=\"showPagination\" items-per-page=\"itemsPerPage\" boundary-links=\"true\" direction-links=\"true\" total-items=\"totalItems\" ng-model=\"currentPageNumeric\" previous-text=\"&amp;lsaquo;\" next-text=\"&amp;rsaquo;\" first-text=\"&amp;laquo;\" last-text=\"&amp;raquo;\" max-size=\"paginationItems\" ng-class=\"{ 'grid-refreshing' : updating }\" class=\"pagination-sm pagination-top\"></pagination><table ng-class=\"{ 'show-options' : showOptions, 'has-options' : hasOptionsBar, 'grid-refreshing' : updating }\" class=\"grid-control\"><tr><th ng-repeat=\"column in columns\" width=\"{{column.width}}\" colspan=\"{{column.colSpan}}\" class=\"{{column.headerClass}}\"><span ng-click=\"sortColumn(column)\" ng-bind=\"column.title | translate\" ng-class=\"{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }\"></span><span ng-if=\"hasRecordSearch &amp;&amp; column == columns[columns.length-1]\" class=\"toggle-search-button\"><ng-button ng-click=\"toggleRecordSearch()\"><span ng-class=\"{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }\" class=\"glyphicon\"></span></ng-button></span></th></tr><tr ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" class=\"search-row\"><td colspan=\"{{(tableColumns)}}\"><form ui-keypress=\"{ 13: searchRecords() }\"><table><tr><td><input type=\"text\" placeholder=\"Enter text to search\" ng-model=\"getRecordListScope().recordSearchText\" class=\"form-control\"/></td><td><ng-button ng-click=\"searchRecords()\"><span class=\"glyphicon glyphicon-search\"></span></ng-button></td></tr></table></form></td></tr><tr ng-repeat=\"row in rows\" ng-class=\"{ 'odd': row.isOdd }\"><td ng-if=\"hasOptionsBar\" ng-class=\"columns[0].cellClass\" cell-show-options=\"\" ng-click=\"onClickOptions(row, null, $event)\" class=\"grid-cell-options\"><span></span></td><td ng-repeat=\"column in columns\" bind-cell=\"column\" row=\"row\" ng-class=\"column.cellClass\" cell-show-options=\"\" ng-click=\"onClickOptions(row, column, $event)\"></td></tr></table><pagination ng-show=\"showPagination\" items-per-page=\"itemsPerPage\" boundary-links=\"true\" direction-links=\"true\" total-items=\"totalItems\" ng-model=\"currentPageNumeric\" previous-text=\"&amp;lsaquo;\" next-text=\"&amp;rsaquo;\" first-text=\"&amp;laquo;\" last-text=\"&amp;raquo;\" max-size=\"paginationItems\" ng-class=\"{ 'grid-refreshing' : updating }\" class=\"pagination-sm\"></pagination><div ng-if=\"toolbarButtons.length &gt; 0\" class=\"grid-control-panel-bottom\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.text | translate\" class=\"md-default md-raised\"></md-button></div></div>",
-    "views/toolBar.jade": ""
+    "views/paging.jade": "<div ng-show=\"showPagination\" items-per-page=\"itemsPerPage\" boundary-links=\"true\" direction-links=\"true\" total-items=\"totalItems\" ng-model=\"currentPageNumeric\" previous-text=\"&amp;lsaquo;\" next-text=\"&amp;rsaquo;\" first-text=\"&amp;laquo;\" last-text=\"&amp;raquo;\" max-size=\"paginationItems\" ng-class=\"{ 'grid-refreshing' : updating }\" class=\"pagination-sm\"></div>",
+    "views/recordList.jade": "<div layout=\"column\" class=\"record-list\"><record-list-toolbar></record-list-toolbar><record-list-refresh-panel></record-list-refresh-panel><record-list-pagination></record-list-pagination><div ng-class=\"{ 'show-options' : showOptions, 'has-options' : hasOptionsBar, 'grid-refreshing' : updating }\" layout=\"column\" class=\"grid-control\"><md-toolbar layout=\"row\" class=\"grid-row md-theme-light\"><div ng-repeat=\"column in columns\" md-colspan=\"column.colSpan\" ng-class=\"column.headerClass\" flex=\"column.width\" class=\"grid-header-cell\"><span ng-click=\"sortColumn(column)\" ng-bind=\"column.title | translate\" ng-class=\"{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }\"></span><span ng-if=\"hasRecordSearch &amp;&amp; column == columns[columns.length-1]\" class=\"toggle-search-button\"><ng-button ng-click=\"toggleRecordSearch()\"><span ng-class=\"{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }\" class=\"glyphicon\"></span></ng-button></span></div></md-toolbar><div layout=\"row\" class=\"grid-row\"><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" flex=\"flex\" class=\"grid-header-cell\"><input type=\"text\" placeholder=\"Enter text to search\" ng-model=\"getRecordListScope().recordSearchText\" class=\"form-control\"/></div><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" class=\"grid-header-cell\"><ng-button ng-click=\"searchRecords()\"><span class=\"glyphicon glyphicon-search\"></span></ng-button></div></div><div ng-repeat-start=\"row in rows\" ng-class=\"{ 'odd': row.isOdd }\" layout=\"row\" ng-click=\"onClickOptions(row, null, $event)\" class=\"grid-row\"><div ng-if=\"hasOptionsBar\" ng-class=\"columns[0].cellClass\" cell-show-options=\"\" class=\"grid-cell-options\"><span></span></div><div ng-repeat=\"column in columns\" ng-class=\"column.cellClass\" flex=\"column.width\" class=\"grid-cell\"><span bind-cell=\"column\" row=\"row\"></span></div></div><md-divider ng-repeat-end=\"ng-repeat-end\"></md-divider></div><record-list-pagination></record-list-pagination><record-list-toolbar></record-list-toolbar></div>",
+    "views/refreshPanel.jade": "<div ng-if=\"manualRefresh\" class=\"recordlist-refresh-panel\"><md-button ng-click=\"refreshNewRecords()\" ng-show=\"hasNewRecords\" class=\"md-primary\">{{ 'Main.GetNewRecords' | translate }}</md-button></div>",
+    "views/toolBar.jade": "<div class=\"grid-toolbar\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.text | translate\" class=\"md-default md-raised\"></md-button></div>"
 };
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -113,6 +114,11 @@ var Record = (function () {
     }
     return Record;
 })();
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -501,12 +507,14 @@ var ScopeConfiguration = (function () {
     ScopeConfiguration.prototype.initializeColumns = function (dataDefinition) {
         var _this = this;
         this.scope.columns = [];
+        this.scope.tableColumns = 0;
         if (!dataDefinition.columns) {
             return;
         }
         Object.keys(dataDefinition.columns).forEach(function (key) {
             var column = dataDefinition.columns[key];
             column.property = key;
+            column.colSpan = column.colSpan || 1;
             _this.scope.columns.push(column);
             _this.scope.tableColumns += column.colSpan;
             if (!column.headerClass) {
@@ -606,10 +614,26 @@ recordListModule.directive('bindCell', ['$compile', function (compileService) {
  * @file PaginationDirective.ts
  * @author Oleg Gordeev
  */
+var PaginationDirectiveLink = (function () {
+    function PaginationDirectiveLink(scope) {
+    }
+    return PaginationDirectiveLink;
+})();
+recordListModule.directive('recordListPagination', [{
+        restrict: 'EA',
+        template: templates['views/paging.jade'],
+        link: function (scope) {
+            return new PaginationDirectiveLink(scope);
+        }
+    }]);
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+/**
+ * @file RecordListDirective.ts
+ * @author Oleg Gordeev
  */
 /// <reference path="../../typings/requirejs/require.d.ts" />
 var RecordListDirectiveLink = (function () {
@@ -868,5 +892,47 @@ recordListModule.directive("recordList", ['recordListConfiguration', '$http', '$
                 return new RecordListDirectiveLink(scope, configuration, httpService, qService);
             }
         };
+    }]);
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+/**
+ * @file RefreshPanelDirective.ts
+ * @author Oleg Gordeev
+ */
+var RefreshPanelDirectiveLink = (function () {
+    function RefreshPanelDirectiveLink(scope) {
+    }
+    return RefreshPanelDirectiveLink;
+})();
+recordListModule.directive('recordListRefreshPanel', [{
+        restrict: 'EA',
+        template: templates['views/refreshPanel.jade'],
+        link: function (scope) {
+            return new RefreshPanelDirectiveLink(scope);
+        }
+    }]);
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+/**
+ * @file ToolBarDirective.ts
+ * @author Oleg Gordeev
+ */
+var ToolBarDirectiveLink = (function () {
+    function ToolBarDirectiveLink(scope) {
+    }
+    return ToolBarDirectiveLink;
+})();
+recordListModule.directive('recordListToolbar', [{
+        restrict: 'EA',
+        template: templates['views/toolBar.jade'],
+        link: function (scope) {
+            return new ToolBarDirectiveLink(scope);
+        }
     }]);
 } if (typeof define === 'function' && define.amd) { define(["angular","angular.animate","angular.translate","angular.messages","angular.material","angular.aria","angular.touch"], function ($_v0,$_v1,$_v2,$_v3,$_v4,$_v5,$_v6) { ___f$($_v0); }); } else if (typeof exports === 'object') { var $_v0 = require('angular');require('angular.animate');require('angular.translate');require('angular.messages');require('angular.material');require('angular.aria');require('angular.touch'); module.exports = ___f$($_v0); } else  { ___f$(window['angular']); } })();

@@ -5,20 +5,20 @@
  */
 
 /**
- * @file PaginationDirective.ts
+ * @file ToolbarDirective.ts
  * @author Oleg Gordeev
  */
 
-class PaginationDirectiveLink {
+class ToolbarDirectiveLink {
     constructor(scope: RecordListDirectiveScope) {
 
     }
 }
 
-recordListModule.directive('recordListPagination', [{
+recordListModule.directive('recordListToolbar', [{
     restrict: 'EA',
-    template: templates['views/paging.jade'],
+    template: templates['views/toolBar.jade'],
     link: (scope: RecordListDirectiveScope) => {
-        return new PaginationDirectiveLink(scope);
+        return new ToolbarDirectiveLink(scope);
     }
 }]);

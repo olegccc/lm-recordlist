@@ -1,0 +1,3 @@
+.recordlist-refresh-panel(ng-if="manualRefresh")
+    md-button.md-primary(ng-click="refreshNewRecords()" ng-show="hasNewRecords")
+        ="{{ 'Main.GetNewRecords' | translate }}"

@@ -5,20 +5,20 @@
  */
 
 /**
- * @file PaginationDirective.ts
+ * @file RefreshPanelDirective.ts
  * @author Oleg Gordeev
  */
 
-class PaginationDirectiveLink {
+class RefreshPanelDirectiveLink {
     constructor(scope: RecordListDirectiveScope) {
 
     }
 }
 
-recordListModule.directive('recordListPagination', [{
+recordListModule.directive('recordListRefreshPanel', [{
     restrict: 'EA',
-    template: templates['views/paging.jade'],
+    template: templates['views/refreshPanel.jade'],
     link: (scope: RecordListDirectiveScope) => {
-        return new PaginationDirectiveLink(scope);
+        return new RefreshPanelDirectiveLink(scope);
     }
 }]);

@@ -3,7 +3,6 @@
     "options": {
       "fast": "never",
       "target": "es3",
-      "module": "amd",
       "declaration": false,
       "failOnTypeErrors": true,
       "sourceMap": false,
@@ -98,6 +97,26 @@
       "src/**/*.js",
       "!src/bootstrap/*.js"
     ]
+  },
+  "sass": {
+    "default": {
+      "files": {
+        "release/lm-recordlist.css": "src/styles/recordList.scss"
+      }
+    }
+  },
+  "cssmin": {
+    "default": {
+      "src": "release/lm-recordlist.css",
+      "dest": "release/lm-recordlist.min.css"
+    }
+  },
+  "csslint": {
+    "default": {
+      "options": {
+      },
+      "src": ["release/lm-recordlist.css"]
+    }
   },
   "wrap-jade": {
     "default": {

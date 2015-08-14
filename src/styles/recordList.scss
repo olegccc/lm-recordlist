@@ -1,0 +1,25 @@
+$border-color: #aaa;
+$border-width: 1px;
+$border: solid $border-width $border-color;
+$cell-padding: 5px;
+$options-panel-background: #aaa;
+
+.record-list {
+  .grid-refreshing {
+    opacity: 0.4;
+    cursor: wait;
+  }
+  md-toolbar {
+    min-height: inherit;
+  }
+  .grid-control {
+    .grid-row {
+      .grid-cell, .grid-header-cell {
+        padding: $cell-padding;
+      }
+    }
+    .options-panel {
+      background: $options-panel-background;
+    }
+  }
+}

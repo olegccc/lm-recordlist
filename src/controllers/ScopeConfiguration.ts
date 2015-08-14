@@ -90,6 +90,7 @@ class ScopeConfiguration {
     private initializeColumns(dataDefinition: ModelDefinition) {
 
         this.scope.columns = [];
+        this.scope.tableColumns = 0;
 
         if (!dataDefinition.columns) {
             return;
@@ -98,6 +99,7 @@ class ScopeConfiguration {
         Object.keys(dataDefinition.columns).forEach((key) => {
             var column = dataDefinition.columns[key];
             column.property = key;
+            column.colSpan = column.colSpan || 1;
             this.scope.columns.push(column);
             this.scope.tableColumns += column.colSpan;
             if (!column.headerClass) {

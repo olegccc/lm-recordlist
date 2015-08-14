@@ -1,0 +1,12 @@
+.record-list .grid-refreshing {
+  opacity: 0.4;
+  cursor: wait; }
+
+.record-list md-toolbar {
+  min-height: inherit; }
+
+.record-list .grid-control .grid-row .grid-cell, .record-list .grid-control .grid-row .grid-header-cell {
+  padding: 5px; }
+
+.record-list .grid-control .options-panel {
+  background: #aaa; }

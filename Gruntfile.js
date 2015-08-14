@@ -8,6 +8,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-protractor-runner');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-sass');
+    grunt.loadNpmTasks('grunt-contrib-csslint');
 
     grunt.config.init(grunt.file.readJSON('./config/grunt.config.json'));
 
@@ -27,6 +30,9 @@ module.exports = function (grunt) {
         'ts-build',
         'wrap-module',
         'uglify',
+        'sass',
+        'csslint',
+        'cssmin',
         'copy:interfaces',
         'ts:tests'
     ]);

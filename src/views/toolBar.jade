@@ -1,0 +1,8 @@
+.grid-toolbar
+    md-button(
+        ng-repeat="button in toolbarButtons"
+        class="md-default md-raised"
+        aria-label="button.text | translate"
+        ng-click="onToolbarButtonClick(button)"
+        ng-bind="button.text | translate"
+    )
