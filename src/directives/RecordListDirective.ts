@@ -50,6 +50,10 @@ class RecordListDirectiveLink {
         }
 
         this.loadModel(configurator);
+
+        this.scope.$watch('currentPage', () => {
+            this.dataChannelController.showPage(this.scope.currentPage);
+        });
     }
 
     private setScopeEvents() {
@@ -63,6 +67,8 @@ class RecordListDirectiveLink {
         this.scope.getColumnLink = (column, row) => RecordListDirectiveLink.extractLink(column.url, row);
         this.scope.onExecuteAction = (action: Action, record: Record) => this.executeAction(action, record);
         this.scope.onNavigateToLink = (link) => this.configuration.navigate(link);
+        this.scope.getPageSize = () => this.configuration.pageSize;
+        this.scope.getRecordCount = () => this.dataChannelController.getRecordCount();
     }
 
     private isActionVisible(action: Action, record: Record) {

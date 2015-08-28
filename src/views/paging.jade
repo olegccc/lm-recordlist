@@ -1,19 +1,6 @@
-div(
-    ng-show="showPagination"
-)
-
-
-.pagination-sm(
-    ng-show="showPagination"
-    items-per-page="itemsPerPage"
-    boundary-links="true"
-    direction-links="true"
-    total-items="totalItems"
-    ng-model="currentPageNumeric"
-    previous-text="&lsaquo;"
-    next-text="&rsaquo;"
-    first-text="&laquo;"
-    last-text="&raquo;"
-    max-size="paginationItems"
-    ng-class="{ 'grid-refreshing' : updating }"
-)
+div.pagination(layout="row" ng-if="showPagination")
+    md-button.md-raised(ng-if="showFastBackward" ng-click="onFastBackward") &laquo;;
+    md-button.md-raised(ng-if="showBackward" ng-click="onBackward") &lsaquo;
+    md-button.md-raised(ng-repeat="page in pages" ng-click="onPage(page)" ng-bind="page.title")
+    md-button.md-raised(ng-if="showForward" ng-click="onForward") &rsaquo;
+    md-button.md-raised(ng-if="showFastForward" ng-click="onFastForward") &raquo;

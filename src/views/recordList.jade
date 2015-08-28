@@ -4,7 +4,11 @@ div.record-list(layout="column")
 
     record-list-refresh-panel
 
-    record-list-pagination
+    record-list-pagination(
+        page-size="getPageSize()"
+        record-count="getRecordCount()"
+        current-page="currentPage"
+    )
 
     .grid-control(
         ng-class="{ 'has-options' : hasOptionsBar, 'grid-refreshing' : updating, 'sortable': columnsSortable }"
@@ -75,6 +79,10 @@ div.record-list(layout="column")
 
         md-divider(ng-repeat-end)
 
-    record-list-pagination
+    record-list-pagination(
+        page-size="getPageSize()"
+        record-count="getRecordCount()"
+        current-page="currentPage"
+    )
 
     record-list-toolbar

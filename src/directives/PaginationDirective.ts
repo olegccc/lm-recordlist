@@ -9,14 +9,112 @@
  * @author Oleg Gordeev
  */
 
+class PaginationPage {
+    title: string;
+    pageNumber: number;
+}
+
 interface PaginationDirectiveScope extends ng.IScope {
-    items: number;
-    records: number;
+    pageSize: number;
+    recordCount: number;
+    currentPage: number;
+    pages: PaginationPage[];
+    showFastBackward: boolean;
+    showBackward: boolean;
+    showForward: boolean;
+    showFastForward: boolean;
+    onFastBackward: () => void;
+    onBackward: () => void;
+    onForward: () => void;
+    onFastForward: () => void;
+    onPage: (PaginationPage) => void;
+    showPagination: boolean;
 }
 
 class PaginationDirectiveLink {
-    constructor(scope: RecordListDirectiveScope) {
 
+    private scope: PaginationDirectiveScope;
+    private steps: number;
+    private fastSteps: number;
+    private pageCount: number;
+
+    constructor(scope: PaginationDirectiveScope) {
+
+        this.scope = scope;
+        this.steps = 2;
+        this.fastSteps = 5;
+
+        scope.$watchGroup(['pageSize', 'recordCount', 'currentPage'], () => {
+            this.updateState();
+        });
+
+        scope.onFastBackward = () => {
+            var newPage = this.scope.currentPage - this.fastSteps;
+            if (newPage <= 0) {
+                newPage = 1;
+            }
+            this.scope.currentPage = newPage;
+        };
+
+        scope.onBackward = () => {
+            if (this.scope.currentPage > 0) {
+                this.scope.currentPage--;
+            }
+        };
+
+        scope.onForward = () => {
+            if (this.scope.currentPage < this.pageCount) {
+                this.scope.currentPage++;
+            }
+        };
+
+        scope.onFastForward = () => {
+            var newPage = this.scope.currentPage + this.fastSteps;
+            if (newPage > this.pageCount) {
+                newPage = this.pageCount;
+            }
+            this.scope.currentPage = newPage;
+        };
+
+        this.updateState();
+    }
+
+    private updateState() {
+        this.scope.showPagination = this.scope.recordCount > this.scope.pageSize;
+        if (!this.scope.showPagination) {
+            return;
+        }
+        this.pageCount = (this.scope.recordCount + this.scope.pageSize-1) / this.scope.pageSize;
+        if (this.scope.currentPage < 1) {
+            this.scope.currentPage = 1;
+        } else if (this.scope.currentPage > this.pageCount) {
+            this.scope.currentPage = this.pageCount;
+        }
+        this.scope.pages = [
+            {
+                title: this.scope.currentPage.toString(),
+                pageNumber: this.scope.currentPage
+            }
+        ];
+        var before = this.scope.currentPage-1;
+        var i;
+        for (i = 0; i < this.steps && before > 0; before--, i++) {
+            this.scope.pages.unshift({
+                title: before.toString(),
+                pageNumber: before
+            });
+        }
+        var after = this.scope.currentPage+1;
+        for (i = 0; i < this.steps && after <= this.pageCount; i++, after++) {
+            this.scope.pages.push({
+                title: after.toString(),
+                pageNumber: after
+            });
+        }
+        this.scope.showBackward = before > 0;
+        this.scope.showFastBackward = before-1 > 0;
+        this.scope.showForward = after <= this.pageCount;
+        this.scope.showFastForward = after+1 <= this.pageCount;
     }
 }
 
@@ -24,11 +122,12 @@ recordListModule.directive('recordListPagination', [() => {
     return {
         restrict: 'EA',
         scope: {
-            items: '=',
-            records: '='
+            pageSize: '=',
+            recordCount: '=',
+            currentPage: '='
         },
         template: templates['views/paging.jade'],
-        link: (scope: RecordListDirectiveScope) => {
+        link: (scope: PaginationDirectiveScope) => {
             return new PaginationDirectiveLink(scope);
         }
     };

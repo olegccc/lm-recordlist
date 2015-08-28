@@ -30,6 +30,10 @@ class DataChannelController implements IDataChannelListener {
         });
     }
 
+    public getRecordCount() {
+        return this.records ? this.records.length : 0;
+    }
+
     private onRecordIdsReceived(recordIds: number[]) {
         this.scope.hasNewRecords = false;
 

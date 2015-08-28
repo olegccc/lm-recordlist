@@ -26,6 +26,8 @@ interface RecordListDirectiveScope extends ng.IScope {
     getColumnLink: (column, row) => string;
     onSearchRecords: () => void;
     onToggleRecordSearch: () => void;
+    getRecordCount: () => number;
+    getPageSize: () => number;
 
     currentPage: number;
     pageCount: number;
