@@ -14,10 +14,13 @@ var recordListModule = angular.module('lm-recordlist', [
     'ngAnimate',
     'pascalprecht.translate'
 ]);
+recordListModule.config(['$translateProvider', function ($translateProvider) {
+        $translateProvider.useSanitizeValueStrategy('escape');
+    }]);
 var templates = {
     "views/optionsBar.jade": "<tr ng-show=\"showOptions\" class=\"options-panel\"><td colspan=\"{{columns.length+1}}\"><md-button ng-disabled=\"!isActionVisible(action)\" ng-repeat=\"action in actions\" ng-bind=\"action.text | translate\" ng-click=\"executeAction(action)\" aria-label=\"action.text | translate\" class=\"md-primary md-raised\"></md-button><span ng-repeat=\"link in links\"><node-link ng-if=\"!link.external\" path=\"{{linkUrl(link)}}\" ng-bind=\"link.text | translate\" class=\"btn btn-info\"></node-link><a ng-if=\"link.external\" href=\"{{linkUrl(link)}}\" ng-bind=\"link.text | translate\" class=\"btn btn-info\"></a></span></td></tr>",
     "views/paging.jade": "<div ng-show=\"showPagination\" items-per-page=\"itemsPerPage\" boundary-links=\"true\" direction-links=\"true\" total-items=\"totalItems\" ng-model=\"currentPageNumeric\" previous-text=\"&amp;lsaquo;\" next-text=\"&amp;rsaquo;\" first-text=\"&amp;laquo;\" last-text=\"&amp;raquo;\" max-size=\"paginationItems\" ng-class=\"{ 'grid-refreshing' : updating }\" class=\"pagination-sm\"></div>",
-    "views/recordList.jade": "<div layout=\"column\" class=\"record-list\"><record-list-toolbar></record-list-toolbar><record-list-refresh-panel></record-list-refresh-panel><record-list-pagination></record-list-pagination><div ng-class=\"{ 'show-options' : showOptions, 'has-options' : hasOptionsBar, 'grid-refreshing' : updating }\" layout=\"column\" class=\"grid-control\"><md-toolbar layout=\"row\" class=\"grid-row md-theme-light\"><div ng-repeat=\"column in columns\" md-colspan=\"column.colSpan\" ng-class=\"column.headerClass\" flex=\"column.width\" class=\"grid-header-cell\"><span ng-click=\"sortColumn(column)\" ng-bind=\"column.title | translate\" ng-class=\"{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }\"></span><span ng-if=\"hasRecordSearch &amp;&amp; column == columns[columns.length-1]\" class=\"toggle-search-button\"><ng-button ng-click=\"toggleRecordSearch()\"><span ng-class=\"{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }\" class=\"glyphicon\"></span></ng-button></span></div></md-toolbar><div layout=\"row\" class=\"grid-row\"><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" flex=\"flex\" class=\"grid-header-cell\"><input type=\"text\" placeholder=\"Enter text to search\" ng-model=\"getRecordListScope().recordSearchText\" class=\"form-control\"/></div><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" class=\"grid-header-cell\"><ng-button ng-click=\"searchRecords()\"><span class=\"glyphicon glyphicon-search\"></span></ng-button></div></div><div ng-repeat-start=\"row in rows\" ng-class=\"{ 'odd': row.isOdd }\" layout=\"row\" ng-click=\"onClickOptions(row, null, $event)\" class=\"grid-row\"><div ng-if=\"hasOptionsBar\" ng-class=\"columns[0].cellClass\" cell-show-options=\"\" class=\"grid-cell-options\"><span></span></div><div ng-repeat=\"column in columns\" ng-class=\"column.cellClass\" flex=\"column.width\" class=\"grid-cell\"><span bind-cell=\"column\" row=\"row\"></span></div></div><md-divider ng-repeat-end=\"ng-repeat-end\"></md-divider></div><record-list-pagination></record-list-pagination><record-list-toolbar></record-list-toolbar></div>",
+    "views/recordList.jade": "<div layout=\"column\" class=\"record-list\"><record-list-toolbar></record-list-toolbar><record-list-refresh-panel></record-list-refresh-panel><record-list-pagination></record-list-pagination><div ng-class=\"{ 'has-options' : hasOptionsBar, 'grid-refreshing' : updating, 'sortable': columnsSortable }\" layout=\"column\" class=\"grid-control\"><md-toolbar layout=\"row\" class=\"grid-row md-theme-light\"><div ng-repeat=\"column in columns\" md-colspan=\"column.colSpan\" ng-class=\"column.headerClass\" flex=\"column.width\" class=\"grid-header-cell\"><span ng-click=\"sortColumn(column)\" tabindex=\"-1\" role=\"option\" ng-bind=\"column.title | translate\" ng-class=\"{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }\"></span><span ng-if=\"hasRecordSearch &amp;&amp; $last\" class=\"toggle-search-button\"><ng-button ng-click=\"toggleRecordSearch()\"><span ng-class=\"{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }\" class=\"glyphicon\"></span></ng-button></span></div></md-toolbar><div layout=\"row\" class=\"grid-row\"><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" flex=\"flex\" class=\"grid-header-cell\"><input type=\"text\" placeholder=\"Enter text to search\" ng-model=\"getRecordListScope().recordSearchText\" class=\"form-control\"/></div><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" class=\"grid-header-cell\"><ng-button ng-click=\"searchRecords()\"><span class=\"glyphicon glyphicon-search\"></span></ng-button></div></div><div ng-repeat-start=\"row in rows\" ng-class=\"{ 'odd': $odd }\" layout=\"row\" ng-click=\"onClickOptions(row, $event)\" role=\"option\" tabindex=\"-1\" class=\"grid-row\"><div ng-repeat=\"column in columns\" ng-class=\"column.cellClass\" layout=\"row\" flex=\"column.width\" class=\"grid-cell\"><div ng-if=\"hasOptionsBar &amp;&amp; $first\" class=\"grid-cell-options\"><md-icon>more_vert</md-icon></div><span bind-cell=\"column\" row=\"row\" flex=\"flex\"></span></div></div><div layout=\"row\" ng-if=\"hasOptionsBar &amp;&amp; row.showOptions\"><md-button ng-repeat=\"action in actions\" ng-click=\"onExecuteAction(action, row)\" ng-show=\"isActionVisible(action, row)\" aria-label=\"action.title\" class=\"md-raised\"><span ng-bind=\"action.title\"></span></md-button></div><md-divider ng-repeat-end=\"ng-repeat-end\"></md-divider></div><record-list-pagination></record-list-pagination><record-list-toolbar></record-list-toolbar></div>",
     "views/refreshPanel.jade": "<div ng-if=\"manualRefresh\" class=\"recordlist-refresh-panel\"><md-button ng-click=\"refreshNewRecords()\" ng-show=\"hasNewRecords\" class=\"md-primary\">{{ 'Main.GetNewRecords' | translate }}</md-button></div>",
     "views/toolBar.jade": "<div class=\"grid-toolbar\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.text | translate\" class=\"md-default md-raised\"></md-button></div>"
 };
@@ -309,7 +312,6 @@ var DataChannelController = (function () {
                     var row = this.scope.rows[k];
                     if (row.id === recordId) {
                         this.scope.rows[k] = target;
-                        target.isOdd = (k % 2) !== 0;
                         break;
                     }
                 }
@@ -343,10 +345,8 @@ var DataChannelController = (function () {
             return;
         }
         this.scope.currentPage = page;
-        this.scope.showOptions = false;
         visibleRecords.forEach(function (record) {
             rows.push(record);
-            record.isOdd = (rows.length % 2) !== 0;
         });
         this.scope.showPagination = this.pageConfiguration.hasPagination();
         this.scope.rows = rows;
@@ -417,6 +417,9 @@ var PageConfiguration = (function () {
         else if (this.pageOffset + pageSize > this.totalItems) {
             this.pageSize = this.totalItems - this.pageOffset;
         }
+        else {
+            this.pageSize = pageSize;
+        }
     };
     PageConfiguration.prototype.setRecordCount = function (recordCount) {
         this.itemsPerPage = this.pageSize;
@@ -434,7 +437,6 @@ var ScopeConfiguration = (function () {
     ScopeConfiguration.prototype.initializeScope = function () {
         this.scope.tableColumns = 0;
         this.scope.actions = [];
-        this.scope.showOptions = false;
         this.scope.currentPage = 0;
         this.scope.showPagination = false;
         this.scope.paginationItems = 7;
@@ -447,13 +449,14 @@ var ScopeConfiguration = (function () {
         this.scope.recordSearchText = "";
         this.scope.columns = [];
         this.scope.hasRecordSearch = false;
+        this.scope.columnsSortable = false;
     };
     ScopeConfiguration.prototype.onDataDefinitionLoaded = function (dataDefinition) {
         this.scope.hasRecordSearch = dataDefinition.hasSearch;
-        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0);
         this.initializeColumns(dataDefinition);
         this.initializeActions(dataDefinition);
         this.initializeColumnScopes();
+        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0);
     };
     ScopeConfiguration.prototype.initializeColumnScopes = function () {
         this.scope.columns.forEach(function (column) {
@@ -526,6 +529,9 @@ var ScopeConfiguration = (function () {
             else {
                 column.cellClass += " grid-data";
             }
+            if (column.sortable) {
+                _this.scope.columnsSortable = true;
+            }
             switch (column.align) {
                 case "Left":
                     column.cellClass += " grid-left";
@@ -539,9 +545,6 @@ var ScopeConfiguration = (function () {
                     column.cellClass += " grid-right";
                     column.headerClass += " grid-right";
                     break;
-            }
-            if (column.ignoreOptions) {
-                column.cellClass += " ignore-options";
             }
             if (!column.template || column.template.length === 0) {
                 var value = "data." + column.property;
@@ -605,6 +608,20 @@ recordListModule.directive('bindCell', ['$compile', function (compileService) {
  * @file OptionsBarDirective.ts
  * @author Oleg Gordeev
  */
+var OptionsBarDirectiveLink = (function () {
+    function OptionsBarDirectiveLink(scope) {
+    }
+    return OptionsBarDirectiveLink;
+})();
+recordListModule.directive('recordListOptions', [function () {
+        return {
+            restrict: 'EA',
+            template: templates['views/optionsBar.jade'],
+            link: function (scope) {
+                return new OptionsBarDirectiveLink(scope);
+            }
+        };
+    }]);
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -619,12 +636,14 @@ var PaginationDirectiveLink = (function () {
     }
     return PaginationDirectiveLink;
 })();
-recordListModule.directive('recordListPagination', [{
-        restrict: 'EA',
-        template: templates['views/paging.jade'],
-        link: function (scope) {
-            return new PaginationDirectiveLink(scope);
-        }
+recordListModule.directive('recordListPagination', [function () {
+        return {
+            restrict: 'EA',
+            template: templates['views/paging.jade'],
+            link: function (scope) {
+                return new PaginationDirectiveLink(scope);
+            }
+        };
     }]);
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -648,8 +667,6 @@ var RecordListDirectiveLink = (function () {
         this.dataChannelController = new DataChannelController(scope, this.pageConfiguration, this.configuration);
         var configurator = new ScopeConfiguration(scope);
         this.setScopeEvents();
-        this.currentRecordId = null;
-        this.currentRecord = null;
         this.dataChannelController.subscribeToChannel();
         if (this.scope.hasOptionsBar) {
             this.scope.columns[0].colSpan = 2;
@@ -662,18 +679,18 @@ var RecordListDirectiveLink = (function () {
         this.scope.onToggleRecordSearch = function () { return _this.toggleRecordSearch(); };
         this.scope.onRefreshNewRecords = function () { return _this.dataChannelController.refreshNewRecords(); };
         this.scope.onToolbarButtonClick = function (action) { return _this.onToolbarButtonClick(action); };
-        this.scope.onClickOptions = function (record, column, event) { return _this.onClickOptions(record, column, event); };
-        this.scope.isActionVisible = function (action) { return _this.isActionVisible(action); };
+        this.scope.onClickOptions = function (record, event) { return _this.onClickOptions(record, event); };
+        this.scope.isActionVisible = function (action, record) { return _this.isActionVisible(action, record); };
         this.scope.onSortColumn = function (column) { return _this.sortColumn(column); };
         this.scope.getColumnLink = function (column, row) { return RecordListDirectiveLink.extractLink(column.url, row); };
-        this.scope.onExecuteAction = function (action) { return _this.executeAction(action); };
+        this.scope.onExecuteAction = function (action, record) { return _this.executeAction(action, record); };
         this.scope.onNavigateToLink = function (link) { return _this.configuration.navigate(link); };
     };
-    RecordListDirectiveLink.prototype.isActionVisible = function (action) {
-        if (this.currentRecord === null || !this.scope.showOptions) {
+    RecordListDirectiveLink.prototype.isActionVisible = function (action, record) {
+        if (!this.scope.hasOptionsBar) {
             return false;
         }
-        return action.visibleFunction(this.currentRecord);
+        return !action.visibleFunction || action.visibleFunction(record);
     };
     RecordListDirectiveLink.prototype.loadModel = function (configurator) {
         var _this = this;
@@ -706,7 +723,7 @@ var RecordListDirectiveLink = (function () {
     };
     RecordListDirectiveLink.prototype.onToolbarButtonClick = function (action) {
         var _this = this;
-        if (this.scope.updating) {
+        if (this.scope.updating || !this.scope.actionHandler) {
             return;
         }
         this.scope.actionHandler(action.name, null).then(function (record) {
@@ -741,9 +758,11 @@ var RecordListDirectiveLink = (function () {
         }
     };
     RecordListDirectiveLink.prototype.hideOptions = function () {
-        this.scope.showOptions = false;
+        for (var i = 0; i < this.scope.rows.length; i++) {
+            this.scope.rows[i].showOptions = false;
+        }
     };
-    RecordListDirectiveLink.prototype.onClickOptions = function (record, column, event) {
+    RecordListDirectiveLink.prototype.onClickOptions = function (record, event) {
         if (this.scope.updating) {
             return;
         }
@@ -753,18 +772,13 @@ var RecordListDirectiveLink = (function () {
         if (event && event.target && event.target.nodeName === "A") {
             return;
         }
-        if (column !== null && column.ignoreOptions) {
-            return;
-        }
-        var recordId = record.id;
-        if (!this.currentRecord || this.currentRecordId !== recordId) {
-            this.scope.showOptions = true;
+        if (!record.showOptions) {
+            this.hideOptions();
+            record.showOptions = true;
         }
         else {
-            this.scope.showOptions = !this.scope.showOptions;
+            record.showOptions = false;
         }
-        this.currentRecordId = recordId;
-        this.currentRecord = record;
     };
     RecordListDirectiveLink.prototype.sortColumn = function (column) {
         if (!column.sortable) {
@@ -803,41 +817,45 @@ var RecordListDirectiveLink = (function () {
             return deferred.promise;
         });
     };
-    RecordListDirectiveLink.prototype.executeAction = function (action) {
+    RecordListDirectiveLink.prototype.executeAction = function (action, record) {
         var _this = this;
-        if (this.currentRecordId === null) {
-            return;
-        }
         if (action.name === "modifyRecord") {
-            var record = this.dataChannelController.getRecordById(this.currentRecordId);
-            if (!record) {
+            var recordToEdit = this.dataChannelController.getRecordById(record.id);
+            if (!recordToEdit) {
                 return;
             }
-            this.editCurrentRecord(record);
+            this.editCurrentRecord(recordToEdit);
             return;
         }
         var actionData = {};
-        actionData.id = this.currentRecordId;
+        actionData.id = record.id;
         var sendCommand = function () {
             var deferred = _this.qService.defer();
-            _this.scope.actionHandler(action.name, actionData)
-                .then(function () {
+            if (_this.scope.actionHandler) {
+                _this.scope.actionHandler(action.name, actionData)
+                    .then(function () {
+                    deferred.resolve();
+                });
+            }
+            else {
                 deferred.resolve();
-            });
+            }
             return deferred.promise;
         };
         if (action.type === ActionType.RECORD_INITIALIZE_CREATE) {
-            this.scope.actionHandler(action.name, actionData)
-                .then(function (data) {
-                _this.configuration.editRecord(data, function (object) {
-                    actionData = object;
-                    return sendCommand();
+            if (this.scope.actionHandler) {
+                this.scope.actionHandler(action.name, actionData)
+                    .then(function (data) {
+                    _this.configuration.editRecord(data, function (object) {
+                        actionData = object;
+                        return sendCommand();
+                    });
+                }, function (message) {
+                    if (_this.configuration.errorHandler) {
+                        _this.configuration.errorHandler(message);
+                    }
                 });
-            }, function (message) {
-                if (_this.configuration.errorHandler) {
-                    _this.configuration.errorHandler(message);
-                }
-            });
+            }
         }
         else if (action.type === ActionType.RECORD_CREATE) {
             this.configuration.editRecord(null, function () {
@@ -907,12 +925,14 @@ var RefreshPanelDirectiveLink = (function () {
     }
     return RefreshPanelDirectiveLink;
 })();
-recordListModule.directive('recordListRefreshPanel', [{
-        restrict: 'EA',
-        template: templates['views/refreshPanel.jade'],
-        link: function (scope) {
-            return new RefreshPanelDirectiveLink(scope);
-        }
+recordListModule.directive('recordListRefreshPanel', [function () {
+        return {
+            restrict: 'EA',
+            template: templates['views/refreshPanel.jade'],
+            link: function (scope) {
+                return new RefreshPanelDirectiveLink(scope);
+            }
+        };
     }]);
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -920,19 +940,21 @@ recordListModule.directive('recordListRefreshPanel', [{
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 /**
- * @file ToolBarDirective.ts
+ * @file ToolbarDirective.ts
  * @author Oleg Gordeev
  */
-var ToolBarDirectiveLink = (function () {
-    function ToolBarDirectiveLink(scope) {
+var ToolbarDirectiveLink = (function () {
+    function ToolbarDirectiveLink(scope) {
     }
-    return ToolBarDirectiveLink;
+    return ToolbarDirectiveLink;
 })();
-recordListModule.directive('recordListToolbar', [{
-        restrict: 'EA',
-        template: templates['views/toolBar.jade'],
-        link: function (scope) {
-            return new ToolBarDirectiveLink(scope);
-        }
+recordListModule.directive('recordListToolbar', [function () {
+        return {
+            restrict: 'EA',
+            template: templates['views/toolBar.jade'],
+            link: function (scope) {
+                return new ToolbarDirectiveLink(scope);
+            }
+        };
     }]);
 } if (typeof define === 'function' && define.amd) { define(["angular","angular.animate","angular.translate","angular.messages","angular.material","angular.aria","angular.touch"], function ($_v0,$_v1,$_v2,$_v3,$_v4,$_v5,$_v6) { ___f$($_v0); }); } else if (typeof exports === 'object') { var $_v0 = require('angular');require('angular.animate');require('angular.translate');require('angular.messages');require('angular.material');require('angular.aria');require('angular.touch'); module.exports = ___f$($_v0); } else  { ___f$(window['angular']); } })();

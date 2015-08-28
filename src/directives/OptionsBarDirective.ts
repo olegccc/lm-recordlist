@@ -8,3 +8,19 @@
  * @file OptionsBarDirective.ts
  * @author Oleg Gordeev
  */
+
+class OptionsBarDirectiveLink {
+    constructor(scope: RecordListDirectiveScope) {
+
+    }
+}
+
+recordListModule.directive('recordListOptions', [() => {
+    return {
+        restrict: 'EA',
+        template: templates['views/optionsBar.jade'],
+        link: (scope: RecordListDirectiveScope) => {
+            return new OptionsBarDirectiveLink(scope);
+        }
+    };
+}]);

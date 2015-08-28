@@ -9,16 +9,27 @@
  * @author Oleg Gordeev
  */
 
+interface PaginationDirectiveScope extends ng.IScope {
+    items: number;
+    records: number;
+}
+
 class PaginationDirectiveLink {
     constructor(scope: RecordListDirectiveScope) {
 
     }
 }
 
-recordListModule.directive('recordListPagination', [{
-    restrict: 'EA',
-    template: templates['views/paging.jade'],
-    link: (scope: RecordListDirectiveScope) => {
-        return new PaginationDirectiveLink(scope);
-    }
+recordListModule.directive('recordListPagination', [() => {
+    return {
+        restrict: 'EA',
+        scope: {
+            items: '=',
+            records: '='
+        },
+        template: templates['views/paging.jade'],
+        link: (scope: RecordListDirectiveScope) => {
+            return new PaginationDirectiveLink(scope);
+        }
+    };
 }]);

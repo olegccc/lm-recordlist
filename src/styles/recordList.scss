@@ -17,9 +17,29 @@ $options-panel-background: #aaa;
       .grid-cell, .grid-header-cell {
         padding: $cell-padding;
       }
+
+      .grid-header-cell {
+        cursor: default;
+      }
     }
     .options-panel {
       background: $options-panel-background;
+    }
+
+    &.has-options {
+      .grid-row {
+        .grid-cell {
+          cursor: pointer;
+        }
+      }
+    }
+
+    &.sortable {
+      .grid-row {
+        .grid-header-cell {
+          cursor: pointer;
+        }
+      }
     }
   }
 }

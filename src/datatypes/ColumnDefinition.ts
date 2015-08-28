@@ -15,7 +15,6 @@ class ColumnDefinition {
     colSpan: number;
     scope: string;
     context: (obj: Record) => any;
-    ignoreOptions: boolean;
     sortable: boolean;
     sort: string;
     headerClass: string;

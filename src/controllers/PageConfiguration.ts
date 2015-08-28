@@ -64,8 +64,9 @@ class PageConfiguration {
             this.pageSize = 0;
         } else if (this.pageOffset + pageSize > this.totalItems) {
             this.pageSize = this.totalItems - this.pageOffset;
+        } else {
+            this.pageSize = pageSize;
         }
-
     }
 
     public setRecordCount(recordCount: number) {

@@ -16,3 +16,7 @@ var recordListModule = angular.module('lm-recordlist', [
     'ngAnimate',
     'pascalprecht.translate'
 ]);
+
+recordListModule.config(['$translateProvider', ($translateProvider) => {
+    $translateProvider.useSanitizeValueStrategy('escape');
+}]);

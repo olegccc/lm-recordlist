@@ -16,8 +16,6 @@ class RecordListDirectiveLink {
     private dataDefinition: ModelDefinition;
     private configuration: IRecordListConfiguration;
     private scope: RecordListDirectiveScope;
-    private currentRecordId: number;
-    private currentRecord: Record;
     private qService: ng.IQService;
     private httpService: ng.IHttpService;
     private filter: any;
@@ -45,9 +43,6 @@ class RecordListDirectiveLink {
 
         this.setScopeEvents();
 
-        this.currentRecordId = null;
-        this.currentRecord = null;
-
         this.dataChannelController.subscribeToChannel();
 
         if (this.scope.hasOptionsBar) {
@@ -62,19 +57,19 @@ class RecordListDirectiveLink {
         this.scope.onToggleRecordSearch = () => this.toggleRecordSearch();
         this.scope.onRefreshNewRecords = () => this.dataChannelController.refreshNewRecords();
         this.scope.onToolbarButtonClick = (action: Action) => this.onToolbarButtonClick(action);
-        this.scope.onClickOptions = (record: Record, column: ColumnDefinition, event) => this.onClickOptions(record, column, event);
-        this.scope.isActionVisible = (action: Action) => this.isActionVisible(action);
+        this.scope.onClickOptions = (record: Record, event) => this.onClickOptions(record, event);
+        this.scope.isActionVisible = (action: Action, record: Record) => this.isActionVisible(action, record);
         this.scope.onSortColumn = (column: ColumnDefinition) => this.sortColumn(column);
         this.scope.getColumnLink = (column, row) => RecordListDirectiveLink.extractLink(column.url, row);
-        this.scope.onExecuteAction = (action: Action) => this.executeAction(action);
+        this.scope.onExecuteAction = (action: Action, record: Record) => this.executeAction(action, record);
         this.scope.onNavigateToLink = (link) => this.configuration.navigate(link);
     }
 
-    private isActionVisible(action: Action) {
-        if (this.currentRecord === null || !this.scope.showOptions) {
+    private isActionVisible(action: Action, record: Record) {
+        if (!this.scope.hasOptionsBar) {
             return false;
         }
-        return action.visibleFunction(this.currentRecord);
+        return !action.visibleFunction || action.visibleFunction(record);
     }
 
     private loadModel(configurator: ScopeConfiguration) {
@@ -109,7 +104,7 @@ class RecordListDirectiveLink {
     }
 
     private onToolbarButtonClick(action: Action) {
-        if (this.scope.updating) {
+        if (this.scope.updating || !this.scope.actionHandler) {
             return;
         }
 
@@ -155,10 +150,12 @@ class RecordListDirectiveLink {
     }
 
     private hideOptions() {
-        this.scope.showOptions = false;
+        for (var i = 0; i < this.scope.rows.length; i++) {
+            this.scope.rows[i].showOptions = false;
+        }
     }
 
-    private onClickOptions(record: Record, column: ColumnDefinition, event) {
+    private onClickOptions(record: Record, event) {
 
         if (this.scope.updating) {
             return;
@@ -172,21 +169,13 @@ class RecordListDirectiveLink {
             return;
         }
 
-        if (column !== null && column.ignoreOptions) {
-            return;
-        }
+        if (!record.showOptions) {
+            this.hideOptions();
+            record.showOptions = true;
 
-        var recordId = record.id;
-
-        if (!this.currentRecord || this.currentRecordId !== recordId) {
-            this.scope.showOptions = true;
         } else {
-            this.scope.showOptions = !this.scope.showOptions;
+            record.showOptions = false;
         }
-
-        this.currentRecordId = recordId;
-        this.currentRecord = record;
-
     }
 
     private sortColumn(column: ColumnDefinition) {
@@ -238,48 +227,50 @@ class RecordListDirectiveLink {
         });
     }
 
-    private executeAction(action: Action) {
-
-        if (this.currentRecordId === null) {
-            return;
-        }
+    private executeAction(action: Action, record: Record) {
 
         if (action.name === "modifyRecord") {
 
-            var record = this.dataChannelController.getRecordById(this.currentRecordId);
+            var recordToEdit = this.dataChannelController.getRecordById(record.id);
 
-            if (!record) {
+            if (!recordToEdit) {
                 return;
             }
 
-            this.editCurrentRecord(record);
+            this.editCurrentRecord(recordToEdit);
             return;
         }
 
         var actionData: IRecord = <any>{};
-        actionData.id = this.currentRecordId;
+        actionData.id = record.id;
 
         var sendCommand = ():ng.IPromise<void> => {
             var deferred: ng.IDeferred<void> = this.qService.defer<void>();
-            this.scope.actionHandler(action.name, actionData)
-                .then(() => {
-                    deferred.resolve();
-                });
+            if (this.scope.actionHandler) {
+                this.scope.actionHandler(action.name, actionData)
+                    .then(() => {
+                        deferred.resolve();
+                    });
+            } else {
+                deferred.resolve();
+            }
             return deferred.promise;
         };
 
         if (action.type === ActionType.RECORD_INITIALIZE_CREATE) {
-            this.scope.actionHandler(action.name, actionData)
-                .then((data: any) => {
-                    this.configuration.editRecord(data, (object: IRecord) => {
-                        actionData = object;
-                        return sendCommand();
+            if (this.scope.actionHandler) {
+                this.scope.actionHandler(action.name, actionData)
+                    .then((data: any) => {
+                        this.configuration.editRecord(data, (object: IRecord) => {
+                            actionData = object;
+                            return sendCommand();
+                        });
+                    }, (message: string) => {
+                        if (this.configuration.errorHandler) {
+                            this.configuration.errorHandler(message);
+                        }
                     });
-                }, (message: string) => {
-                    if (this.configuration.errorHandler) {
-                        this.configuration.errorHandler(message);
-                    }
-                });
+            }
         } else if (action.type === ActionType.RECORD_CREATE) {
             this.configuration.editRecord(null, () => {
                 return sendCommand();

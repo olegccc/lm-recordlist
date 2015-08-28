@@ -8,16 +8,22 @@ class TestController {
 
     private webForms: IWebFormsService;
 
+    private createRecord(index: number): IRecord {
+        var record = new TestRecord();
+        record.field1 = "abc" + index;
+        record.field2 = "def" + index;
+        return record;
+    }
+
     constructor(scope: TestControllerScope, webForms: IWebFormsService, qService: ng.IQService, recordListConfiguration: IRecordListConfiguration) {
         this.webForms = webForms;
         var dataStorage = new TestDataStorage(qService);
         scope.dataChannel = dataStorage;
-        var record1 = new TestRecord();
-        record1.field1 = "abc";
-        record1.field2 = "def";
-        dataStorage.writeRecords(null, [
-            record1
-        ]);
+
+        for (var i = 1; i < 40; i++) {
+            dataStorage.writeRecords(null, [this.createRecord(i)]);
+        }
+
         scope.actionHandler = null;
         scope.pageHandler = null;
 

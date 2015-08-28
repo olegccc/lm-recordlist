@@ -17,5 +17,11 @@
     "field2": {
       "title": "Field2"
     }
+  },
+  "actions": {
+    "action1":     {
+      "type": "RECORD",
+      "title": "Action1"
+    }
   }
 }

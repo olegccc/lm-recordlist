@@ -15,10 +15,12 @@ class RefreshPanelDirectiveLink {
     }
 }
 
-recordListModule.directive('recordListRefreshPanel', [{
-    restrict: 'EA',
-    template: templates['views/refreshPanel.jade'],
-    link: (scope: RecordListDirectiveScope) => {
-        return new RefreshPanelDirectiveLink(scope);
-    }
+recordListModule.directive('recordListRefreshPanel', [() => {
+    return {
+        restrict: 'EA',
+        template: templates['views/refreshPanel.jade'],
+        link: (scope: RecordListDirectiveScope) => {
+            return new RefreshPanelDirectiveLink(scope);
+        }
+    };
 }]);

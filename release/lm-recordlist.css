@@ -8,5 +8,14 @@
 .record-list .grid-control .grid-row .grid-cell, .record-list .grid-control .grid-row .grid-header-cell {
   padding: 5px; }
 
+.record-list .grid-control .grid-row .grid-header-cell {
+  cursor: default; }
+
 .record-list .grid-control .options-panel {
   background: #aaa; }
+
+.record-list .grid-control.has-options .grid-row .grid-cell {
+  cursor: pointer; }
+
+.record-list .grid-control.sortable .grid-row .grid-header-cell {
+  cursor: pointer; }

@@ -10,7 +10,6 @@ class ScopeConfiguration {
     initializeScope() {
         this.scope.tableColumns = 0;
         this.scope.actions = [];
-        this.scope.showOptions = false;
         this.scope.currentPage = 0;
         this.scope.showPagination = false;
         this.scope.paginationItems = 7;
@@ -23,15 +22,16 @@ class ScopeConfiguration {
         this.scope.recordSearchText = "";
         this.scope.columns = [];
         this.scope.hasRecordSearch = false;
+        this.scope.columnsSortable = false;
     }
 
     public onDataDefinitionLoaded(dataDefinition: ModelDefinition) {
 
         this.scope.hasRecordSearch = dataDefinition.hasSearch;
-        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0);
         this.initializeColumns(dataDefinition);
         this.initializeActions(dataDefinition);
         this.initializeColumnScopes();
+        this.scope.hasOptionsBar = this.scope.columns.length > 0 && (this.scope.actions.length > 0);
     }
 
     private initializeColumnScopes() {
@@ -110,6 +110,9 @@ class ScopeConfiguration {
             } else {
                 column.cellClass += " grid-data";
             }
+            if (column.sortable) {
+                this.scope.columnsSortable = true;
+            }
 
             switch (column.align) {
                 case "Left":
@@ -124,10 +127,6 @@ class ScopeConfiguration {
                     column.cellClass += " grid-right";
                     column.headerClass += " grid-right";
                     break;
-            }
-
-            if (column.ignoreOptions) {
-                column.cellClass += " ignore-options";
             }
 
             if (!column.template || column.template.length === 0) {

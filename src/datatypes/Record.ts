@@ -12,5 +12,5 @@
 class Record {
     loaded: boolean;
     id: number;
-    isOdd: boolean;
+    showOptions: boolean;
 }

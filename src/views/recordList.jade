@@ -7,7 +7,7 @@ div.record-list(layout="column")
     record-list-pagination
 
     .grid-control(
-        ng-class="{ 'show-options' : showOptions, 'has-options' : hasOptionsBar, 'grid-refreshing' : updating }"
+        ng-class="{ 'has-options' : hasOptionsBar, 'grid-refreshing' : updating, 'sortable': columnsSortable }"
         layout="column"
     )
 
@@ -20,10 +20,12 @@ div.record-list(layout="column")
             )
                 span(
                     ng-click="sortColumn(column)"
+                    tabindex="-1"
+                    role="option"
                     ng-bind="column.title | translate"
                     ng-class="{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }"
                 )
-                span.toggle-search-button(ng-if="hasRecordSearch && column == columns[columns.length-1]")
+                span.toggle-search-button(ng-if="hasRecordSearch && $last")
                     ng-button(ng-click="toggleRecordSearch()")
                         span.glyphicon(ng-class="{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }")
 
@@ -36,27 +38,40 @@ div.record-list(layout="column")
 
         .grid-row(
             ng-repeat-start="row in rows"
-            ng-class="{ 'odd': row.isOdd }"
+            ng-class="{ 'odd': $odd }"
             layout="row"
-            ng-click="onClickOptions(row, null, $event)"
+            ng-click="onClickOptions(row, $event)"
+            role="option"
+            tabindex="-1"
         )
-
-            .grid-cell-options(
-                ng-if="hasOptionsBar"
-                ng-class="columns[0].cellClass"
-                cell-show-options=''
-            )
-                span
-
             .grid-cell(
                 ng-repeat="column in columns"
                 ng-class="column.cellClass"
+                layout="row"
                 flex="column.width"
             )
+                .grid-cell-options(
+                    ng-if="hasOptionsBar && $first"
+                )
+                    md-icon more_vert
+
                 span(
                     bind-cell="column"
                     row="row"
+                    flex
                 )
+
+        div(
+            layout="row"
+            ng-if="hasOptionsBar && row.showOptions"
+        )
+            md-button.md-raised(
+                ng-repeat="action in actions"
+                ng-click="onExecuteAction(action, row)"
+                ng-show="isActionVisible(action, row)"
+                aria-label="action.title"
+            )
+                span(ng-bind="action.title")
 
         md-divider(ng-repeat-end)
 

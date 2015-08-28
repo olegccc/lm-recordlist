@@ -15,10 +15,12 @@ class ToolbarDirectiveLink {
     }
 }
 
-recordListModule.directive('recordListToolbar', [{
-    restrict: 'EA',
-    template: templates['views/toolBar.jade'],
-    link: (scope: RecordListDirectiveScope) => {
-        return new ToolbarDirectiveLink(scope);
-    }
+recordListModule.directive('recordListToolbar', [() => {
+    return {
+        restrict: 'EA',
+        template: templates['views/toolBar.jade'],
+        link: (scope: RecordListDirectiveScope) => {
+            return new ToolbarDirectiveLink(scope);
+        }
+    };
 }]);

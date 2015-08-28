@@ -198,7 +198,6 @@ class DataChannelController implements IDataChannelListener {
                     var row = this.scope.rows[k];
                     if (row.id === recordId) {
                         this.scope.rows[k] = target;
-                        target.isOdd = (k % 2) !== 0;
                         break;
                     }
                 }
@@ -243,11 +242,9 @@ class DataChannelController implements IDataChannelListener {
         }
 
         this.scope.currentPage = page;
-        this.scope.showOptions = false;
 
         visibleRecords.forEach(function(record: Record) {
             rows.push(record);
-            record.isOdd = (rows.length % 2) !== 0;
         });
 
         this.scope.showPagination = this.pageConfiguration.hasPagination();
