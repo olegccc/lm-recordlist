@@ -201,10 +201,10 @@ class RecordListDirectiveLink {
             column.sort = "";
         }
 
-        if (!current || current === "up") {
-            current = "down";
+        if (!current || current === Constants.SORT_DIRECTION_UP) {
+            current = Constants.SORT_DIRECTION_DOWN;
         } else {
-            current = "up";
+            current = Constants.SORT_DIRECTION_UP;
         }
 
         column.sort = current;
@@ -217,7 +217,7 @@ class RecordListDirectiveLink {
         this.dataChannelController.showPage(1);
     }
 
-    private editCurrentRecord(record) {
+    private editRecord(record) {
 
         this.configuration.editRecord(record, (record) => {
             var deferred: ng.IDeferred<void> = this.qService.defer<void>();
@@ -235,7 +235,7 @@ class RecordListDirectiveLink {
 
     private executeAction(action: Action, record: Record) {
 
-        if (action.name === "modifyRecord") {
+        if (action.name === Constants.MODIFY_RECORD_ACTION) {
 
             var recordToEdit = this.dataChannelController.getRecordById(record.id);
 
@@ -243,7 +243,7 @@ class RecordListDirectiveLink {
                 return;
             }
 
-            this.editCurrentRecord(recordToEdit);
+            this.editRecord(recordToEdit);
             return;
         }
 

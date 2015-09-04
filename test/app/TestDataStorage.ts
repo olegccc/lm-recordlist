@@ -68,7 +68,7 @@ class TestDataStorage implements IDataChannelFactory {
 
         Object.keys(this.subscribers).forEach((channelId2) => {
             removed.forEach((id) => {
-                this.subscribers[channelId].onRecordRemoved(id, channelId != +channelId2);
+                this.subscribers[channelId2].onRecordRemoved(id, channelId != +channelId2);
             });
         });
 

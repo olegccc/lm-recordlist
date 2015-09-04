@@ -22,7 +22,7 @@ var templates = {
     "views/paging.jade": "<div layout=\"row\" ng-if=\"showPagination\" class=\"pagination\"><md-button ng-if=\"showFastBackward\" ng-click=\"onFastBackward()\" class=\"md-raised md-mini\">&laquo;;</md-button><md-button ng-if=\"showBackward\" ng-click=\"onBackward()\" class=\"md-raised\">&lsaquo;</md-button><md-button ng-repeat=\"page in pages\" ng-click=\"onPage(page)\" ng-bind=\"page.title\" ng-disabled=\"page.pageNumber === currentPage\" class=\"md-raised\"></md-button><md-button ng-if=\"showForward\" ng-click=\"onForward()\" class=\"md-raised\">&rsaquo;</md-button><md-button ng-if=\"showFastForward\" ng-click=\"onFastForward()\" class=\"md-raised\">&raquo;</md-button></div>",
     "views/recordList.jade": "<div layout=\"column\" class=\"record-list\"><record-list-toolbar></record-list-toolbar><record-list-refresh-panel></record-list-refresh-panel><record-list-pagination page-size=\"getPageSize()\" record-count=\"getRecordCount()\" current-page=\"currentPage\"></record-list-pagination><div ng-class=\"{ 'has-options' : hasOptionsBar, 'grid-refreshing' : updating, 'sortable': columnsSortable }\" layout=\"column\" class=\"grid-control\"><md-toolbar layout=\"row\" class=\"grid-row md-theme-light\"><div ng-repeat=\"column in columns\" md-colspan=\"column.colSpan\" ng-class=\"column.headerClass\" flex=\"column.width\" class=\"grid-header-cell\"><span ng-click=\"sortColumn(column)\" tabindex=\"-1\" role=\"option\" ng-bind=\"column.title | translate\" ng-class=\"{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }\"></span><span ng-if=\"hasRecordSearch &amp;&amp; $last\" class=\"toggle-search-button\"><ng-button ng-click=\"toggleRecordSearch()\"><span ng-class=\"{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }\" class=\"glyphicon\"></span></ng-button></span></div></md-toolbar><div layout=\"row\" class=\"grid-row\"><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" flex=\"flex\" class=\"grid-header-cell\"><input type=\"text\" placeholder=\"Enter text to search\" ng-model=\"getRecordListScope().recordSearchText\" class=\"form-control\"/></div><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" class=\"grid-header-cell\"><ng-button ng-click=\"searchRecords()\"><span class=\"glyphicon glyphicon-search\"></span></ng-button></div></div><div ng-repeat-start=\"row in rows\" ng-class=\"{ 'odd': $odd }\" layout=\"row\" ng-click=\"onClickOptions(row, $event)\" role=\"option\" tabindex=\"-1\" class=\"grid-row\"><div ng-repeat=\"column in columns\" ng-class=\"column.cellClass\" layout=\"row\" flex=\"column.width\" class=\"grid-cell\"><div ng-if=\"hasOptionsBar &amp;&amp; $first\" class=\"grid-cell-options\"><md-icon>more_vert</md-icon></div><span bind-cell=\"column\" row=\"row\" flex=\"flex\"></span></div></div><div layout=\"row\" ng-if=\"hasOptionsBar &amp;&amp; row.showOptions\"><md-button ng-repeat=\"action in actions\" ng-click=\"onExecuteAction(action, row)\" ng-show=\"isActionVisible(action, row)\" aria-label=\"action.title\" class=\"md-raised\"><span ng-bind=\"action.title\"></span></md-button></div><md-divider ng-repeat-end=\"ng-repeat-end\"></md-divider></div><record-list-pagination page-size=\"getPageSize()\" record-count=\"getRecordCount()\" current-page=\"currentPage\"></record-list-pagination><record-list-toolbar></record-list-toolbar></div>",
     "views/refreshPanel.jade": "<div ng-if=\"manualRefresh\" class=\"recordlist-refresh-panel\"><md-button ng-click=\"refreshNewRecords()\" ng-show=\"hasNewRecords\" class=\"md-primary\">{{ 'Main.GetNewRecords' | translate }}</md-button></div>",
-    "views/toolBar.jade": "<div class=\"grid-toolbar\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.text | translate\" class=\"md-default md-raised\"></md-button></div>"
+    "views/toolBar.jade": "<div class=\"grid-toolbar\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.title | translate\" class=\"md-default md-raised\"></md-button></div>"
 };
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -83,6 +83,14 @@ var ColumnDefinition = (function () {
     function ColumnDefinition() {
     }
     return ColumnDefinition;
+})();
+var Constants = (function () {
+    function Constants() {
+    }
+    Constants.MODIFY_RECORD_ACTION = "modifyRecord";
+    Constants.SORT_DIRECTION_UP = "up";
+    Constants.SORT_DIRECTION_DOWN = "down";
+    return Constants;
 })();
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -884,11 +892,11 @@ var RecordListDirectiveLink = (function () {
             var column = this.scope.columns[i];
             column.sort = "";
         }
-        if (!current || current === "up") {
-            current = "down";
+        if (!current || current === Constants.SORT_DIRECTION_UP) {
+            current = Constants.SORT_DIRECTION_DOWN;
         }
         else {
-            current = "up";
+            current = Constants.SORT_DIRECTION_UP;
         }
         column.sort = current;
         this.hideOptions();
@@ -896,7 +904,7 @@ var RecordListDirectiveLink = (function () {
         this.dataChannelController.sort(field, current);
         this.dataChannelController.showPage(1);
     };
-    RecordListDirectiveLink.prototype.editCurrentRecord = function (record) {
+    RecordListDirectiveLink.prototype.editRecord = function (record) {
         var _this = this;
         this.configuration.editRecord(record, function (record) {
             var deferred = _this.qService.defer();
@@ -911,12 +919,12 @@ var RecordListDirectiveLink = (function () {
     };
     RecordListDirectiveLink.prototype.executeAction = function (action, record) {
         var _this = this;
-        if (action.name === "modifyRecord") {
+        if (action.name === Constants.MODIFY_RECORD_ACTION) {
             var recordToEdit = this.dataChannelController.getRecordById(record.id);
             if (!recordToEdit) {
                 return;
             }
-            this.editCurrentRecord(recordToEdit);
+            this.editRecord(recordToEdit);
             return;
         }
         var actionData = {};

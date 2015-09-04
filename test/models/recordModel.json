@@ -19,9 +19,21 @@
     }
   },
   "actions": {
-    "action1":     {
+    "view": {
       "type": "RECORD",
-      "title": "Action1"
+      "title": "View"
+    },
+    "modifyRecord": {
+      "type": "RECORD",
+      "title": "Modify"
+    },
+    "deleteRecord": {
+      "type": "RECORD",
+      "title": "Delete"
+    },
+    "create": {
+      "type": "CREATE",
+      "title": "Create"
     }
   }
 }

@@ -7,6 +7,8 @@ interface TestControllerScope extends ng.IScope {
 class TestController {
 
     private webForms: IWebFormsService;
+    private qService: ng.IQService;
+    private scope: TestControllerScope;
 
     private createRecord(index: number): IRecord {
         var record = new TestRecord();
@@ -16,7 +18,11 @@ class TestController {
     }
 
     constructor(scope: TestControllerScope, webForms: IWebFormsService, qService: ng.IQService, recordListConfiguration: IRecordListConfiguration) {
+
         this.webForms = webForms;
+        this.qService = qService;
+        this.scope = scope;
+
         var dataStorage = new TestDataStorage(qService);
         scope.dataChannel = dataStorage;
 
@@ -24,7 +30,28 @@ class TestController {
             dataStorage.writeRecords(null, [this.createRecord(i)]);
         }
 
-        scope.actionHandler = null;
+        scope.actionHandler = (actionName: string, dataObject: TestRecord) => {
+
+            switch (actionName) {
+                case "create":
+                    if (dataObject === null) {
+                        break;
+                    }
+                    return dataStorage.writeRecords(null, [dataObject]);
+                case "view":
+                    alert(JSON.stringify(dataObject));
+                    break;
+                case "modifyRecord":
+                    return dataStorage.writeRecords(null, [dataObject]);
+                case "deleteRecord":
+                    return dataStorage.deleteRecords(null, [dataObject.id]);
+            }
+
+            var defer = this.qService.defer<void>();
+            defer.resolve();
+            return defer.promise;
+        };
+
         scope.pageHandler = null;
 
         recordListConfiguration.editRecord = (record: IRecord, resolver: (object: IRecord) => ng.IPromise<void>) => {

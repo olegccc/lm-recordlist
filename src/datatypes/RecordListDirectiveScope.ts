@@ -40,7 +40,7 @@ interface RecordListDirectiveScope extends ng.IScope {
     paginationItems: number;
     pageLoaded: boolean;
     updating: boolean;
-    toolbarButtons: any[];
+    toolbarButtons: Action[];
     hasNewRecords: boolean;
     hasRecordSearch: boolean;
     recordSearchVisible: boolean;
