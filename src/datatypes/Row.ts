@@ -5,12 +5,12 @@
  */
 
 /**
- * @file Record.ts
+ * @file Row.ts
  * @author Oleg Gordeev
  */
 
-class Record {
-    loaded: boolean;
+class Row {
     id: number;
     showOptions: boolean;
+    record: IRecord;
 }

@@ -17,11 +17,11 @@ interface RecordListDirectiveScope extends ng.IScope {
 
     onToolbarButtonClick: (action: Action) => void;
     onRefreshNewRecords: () => void;
-    onClickOptions: (record: Record, event) => void;
+    onClickOptions: (record: Row, event) => void;
     onSortColumn: (column: ColumnDefinition) => void;
     onNavigateToLink: (link) => void;
-    isActionVisible: (action: Action, record: Record) => boolean;
-    onExecuteAction: (action: Action, record: Record) => void;
+    isActionVisible: (action: Action, record: Row) => boolean;
+    onExecuteAction: (action: Action, record: Row) => void;
     linkUrl: (link: LinkDefinition) => string;
     getColumnLink: (column, row) => string;
     onSearchRecords: () => void;
@@ -35,7 +35,7 @@ interface RecordListDirectiveScope extends ng.IScope {
     actions: Action[];
     columns: ColumnDefinition[];
     hasOptionsBar: boolean;
-    rows: Record[];
+    rows: Row[];
     showPagination: boolean;
     paginationItems: number;
     pageLoaded: boolean;

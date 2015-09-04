@@ -11,7 +11,7 @@
 
 interface BindCellDirectiveScope extends ng.IScope {
     column: ColumnDefinition;
-    row: Record;
+    row: Row;
     data: any;
 }
 
@@ -25,7 +25,7 @@ class BindCellDirectiveLink {
         this.scope = scope;
         this.compileService = compileService;
 
-        this.scope.data = this.scope.column.context(this.scope.row);
+        this.scope.data = this.scope.column.context(this.scope.row.record);
 
         scope.$watch(() => this.scope.column.template, (newValue, oldValue) => {
             this.updateValue();

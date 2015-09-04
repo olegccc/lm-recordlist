@@ -1,7 +1,8 @@
 class DataChannelController implements IDataChannelListener {
 
     private scope: RecordListDirectiveScope;
-    private records: Record[];
+    private records: IRecord[];
+    private loadedRecords: {[key: number]: boolean};
     private pageConfiguration: PageConfiguration;
     private manualRefresh: boolean;
     private moduleConfiguration: IRecordListConfiguration;
@@ -11,6 +12,7 @@ class DataChannelController implements IDataChannelListener {
 
         this.scope = scope;
         this.records = [];
+        this.loadedRecords = {};
         this.pageConfiguration = pageConfiguration;
         this.moduleConfiguration = moduleConfiguration;
         this.manualRefresh = false;
@@ -37,21 +39,23 @@ class DataChannelController implements IDataChannelListener {
     private onRecordIdsReceived(recordIds: number[]) {
         this.scope.hasNewRecords = false;
 
-        var savedRecords: {[key: number]: Record} = {};
+        var savedRecords: {[key: number]: IRecord} = {};
 
-        this.records.forEach((record: Record) => {
-            if (record.loaded) {
+        this.records.forEach((record: IRecord) => {
+            if (this.loadedRecords[record.id]) {
                 savedRecords[record.id] = record;
             }
         });
 
         this.records = [];
+        this.loadedRecords = {};
 
         recordIds.forEach((recordId: number) => {
-            var record: Record;
+            var record: IRecord;
 
             if (savedRecords.hasOwnProperty(recordId.toString())) {
                 record = savedRecords[recordId];
+                this.loadedRecords[recordId] = true;
             } else {
                 record = this.createNewRecord(recordId);
             }
@@ -74,6 +78,7 @@ class DataChannelController implements IDataChannelListener {
             this.scope.hasNewRecords = true;
         }
 
+        this.pageConfiguration.setRecordCount(this.records.length);
         this.refreshNewRecords();
     }
 
@@ -90,6 +95,8 @@ class DataChannelController implements IDataChannelListener {
             }
         }
 
+        this.pageConfiguration.setRecordCount(this.records.length);
+
         if (hasChanges) {
             this.loadVisibleRecords();
         }
@@ -103,6 +110,7 @@ class DataChannelController implements IDataChannelListener {
                     this.updateVisibleRecords([id], this.scope.currentPage);
                 } else {
                     this.records[j] = this.createNewRecord(id);
+                    this.loadedRecords[id] = false;
                 }
                 break;
             }
@@ -113,7 +121,7 @@ class DataChannelController implements IDataChannelListener {
         this.manualRefresh = definition.manualRefresh;
     }
 
-    getRecordById(recordId: number): Record {
+    getRecordById(recordId: number): IRecord {
         for (var index = 0; index < this.records.length; index++) {
             var record = this.records[index];
             if (record.id === recordId) {
@@ -126,6 +134,7 @@ class DataChannelController implements IDataChannelListener {
     private resetRecords(recordIds: number[]) {
 
         this.records = [];
+        this.loadedRecords = {};
 
         for (var i = 0; i < recordIds.length; i++) {
             var recordId = recordIds[i];
@@ -136,9 +145,8 @@ class DataChannelController implements IDataChannelListener {
         this.pageConfiguration.setRecordCount(this.records.length);
     }
 
-    private createNewRecord(recordId: number): Record {
-        var record: Record = new Record();
-        record.loaded = false;
+    private createNewRecord(recordId: number): Row {
+        var record: Row = new Row();
 
         this.scope.columns.forEach((column: ColumnDefinition) => {
             record[column.property] = "";
@@ -153,7 +161,7 @@ class DataChannelController implements IDataChannelListener {
 
         for (var i = 0; i < this.records.length; i++) {
             var record = this.records[i];
-            if (!record.loaded) {
+            if (!this.loadedRecords[record.id]) {
                 unloadedRecords++;
             }
         }
@@ -183,28 +191,21 @@ class DataChannelController implements IDataChannelListener {
         });
     }
 
-    private updateRecords(updated: Record[]) {
+    private updateRecords(updated: IRecord[]) {
         for (var i = 0; i < updated.length; i++) {
             var source = updated[i];
             var recordId = source.id;
+
             var target = DataChannelController.createRecordCopy(source);
 
             for (var j = 0; j < this.records.length; j++) {
                 var currentRecord = this.records[j];
-                var currentRecordId = currentRecord.id;
-                if (currentRecordId !== recordId) {
+                if (currentRecord.id !== recordId) {
                     continue;
                 }
 
                 this.records[j] = target;
-
-                for (var k = 0; k < this.scope.rows.length; k++) {
-                    var row = this.scope.rows[k];
-                    if (row.id === recordId) {
-                        this.scope.rows[k] = target;
-                        break;
-                    }
-                }
+                this.loadedRecords[target.id] = true;
 
                 break;
             }
@@ -215,8 +216,7 @@ class DataChannelController implements IDataChannelListener {
         this.showPage(this.scope.currentPage);
     }
 
-    private static createRecordCopy(record: Record): Record {
-        record.loaded = true;
+    private static createRecordCopy(record: IRecord): IRecord {
         return record;
     }
 
@@ -226,15 +226,15 @@ class DataChannelController implements IDataChannelListener {
             return;
         }
 
-        var rows: Record[] = [];
+        var rows: Row[] = [];
         var rowIds: number[] = [];
 
         this.pageConfiguration.setCurrentPage(page);
 
         var visibleRecords = this.pageConfiguration.getVisibleRecords(this.records);
 
-        visibleRecords.forEach(function(record: Record) {
-            if (!record.loaded) {
+        visibleRecords.forEach((record: Row) => {
+            if (!this.loadedRecords[record.id]) {
                 rowIds.push(record.id);
             }
         });
@@ -247,8 +247,13 @@ class DataChannelController implements IDataChannelListener {
 
         this.scope.currentPage = page;
 
-        visibleRecords.forEach(function(record: Record) {
-            rows.push(record);
+        visibleRecords.forEach((record: IRecord) => {
+            var row = {
+                id: record.id,
+                showOptions: false,
+                record: record
+            };
+            rows.push(row);
         });
 
         this.scope.showPagination = this.pageConfiguration.hasPagination();

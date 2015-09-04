@@ -38,9 +38,9 @@ class ScopeConfiguration {
         this.scope.columns.forEach((column: ColumnDefinition) => {
             column.colSpan = 1;
             if (!column.scope || !column.scope.length) {
-                column.context = (obj: Record) => { return obj; };
+                column.context = (obj: IRecord) => { return obj; };
             } else {
-                column.context = <(obj: Record) => any>(new Function("obj", "with(obj) { return " + column.scope + "; }"));
+                column.context = <(obj: IRecord) => any>(new Function("obj", "with(obj) { return " + column.scope + "; }"));
             }
         });
     }

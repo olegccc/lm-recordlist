@@ -34,7 +34,7 @@ class PageConfiguration {
         return this.pageSize > 0 && recordIndex >= this.pageOffset && recordIndex < this.pageOffset + this.pageSize;
     }
 
-    public getVisibleRecords(allRecords: Record[]): Record[] {
+    public getVisibleRecords(allRecords: IRecord[]): IRecord[] {
         var ret = [];
         var start = this.pageOffset;
         var end = start + this.pageSize;

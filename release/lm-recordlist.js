@@ -116,20 +116,20 @@ var LinkDefinition = (function () {
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-/**
- * @file Record.ts
- * @author Oleg Gordeev
- */
-var Record = (function () {
-    function Record() {
-    }
-    return Record;
-})();
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+/**
+ * @file Row.ts
+ * @author Oleg Gordeev
+ */
+var Row = (function () {
+    function Row() {
+    }
+    return Row;
+})();
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -164,6 +164,7 @@ var DataChannelController = (function () {
     function DataChannelController(scope, pageConfiguration, moduleConfiguration) {
         this.scope = scope;
         this.records = [];
+        this.loadedRecords = {};
         this.pageConfiguration = pageConfiguration;
         this.moduleConfiguration = moduleConfiguration;
         this.manualRefresh = false;
@@ -187,15 +188,17 @@ var DataChannelController = (function () {
         this.scope.hasNewRecords = false;
         var savedRecords = {};
         this.records.forEach(function (record) {
-            if (record.loaded) {
+            if (_this.loadedRecords[record.id]) {
                 savedRecords[record.id] = record;
             }
         });
         this.records = [];
+        this.loadedRecords = {};
         recordIds.forEach(function (recordId) {
             var record;
             if (savedRecords.hasOwnProperty(recordId.toString())) {
                 record = savedRecords[recordId];
+                _this.loadedRecords[recordId] = true;
             }
             else {
                 record = _this.createNewRecord(recordId);
@@ -215,6 +218,7 @@ var DataChannelController = (function () {
         if (this.manualRefresh) {
             this.scope.hasNewRecords = true;
         }
+        this.pageConfiguration.setRecordCount(this.records.length);
         this.refreshNewRecords();
     };
     DataChannelController.prototype.recordRemoved = function (id) {
@@ -227,6 +231,7 @@ var DataChannelController = (function () {
                 break;
             }
         }
+        this.pageConfiguration.setRecordCount(this.records.length);
         if (hasChanges) {
             this.loadVisibleRecords();
         }
@@ -240,6 +245,7 @@ var DataChannelController = (function () {
                 }
                 else {
                     this.records[j] = this.createNewRecord(id);
+                    this.loadedRecords[id] = false;
                 }
                 break;
             }
@@ -259,6 +265,7 @@ var DataChannelController = (function () {
     };
     DataChannelController.prototype.resetRecords = function (recordIds) {
         this.records = [];
+        this.loadedRecords = {};
         for (var i = 0; i < recordIds.length; i++) {
             var recordId = recordIds[i];
             var record = this.createNewRecord(recordId);
@@ -267,8 +274,7 @@ var DataChannelController = (function () {
         this.pageConfiguration.setRecordCount(this.records.length);
     };
     DataChannelController.prototype.createNewRecord = function (recordId) {
-        var record = new Record();
-        record.loaded = false;
+        var record = new Row();
         this.scope.columns.forEach(function (column) {
             record[column.property] = "";
         });
@@ -280,7 +286,7 @@ var DataChannelController = (function () {
         var unloadedRecords = 0;
         for (var i = 0; i < this.records.length; i++) {
             var record = this.records[i];
-            if (!record.loaded) {
+            if (!this.loadedRecords[record.id]) {
                 unloadedRecords++;
             }
         }
@@ -314,18 +320,11 @@ var DataChannelController = (function () {
             var target = DataChannelController.createRecordCopy(source);
             for (var j = 0; j < this.records.length; j++) {
                 var currentRecord = this.records[j];
-                var currentRecordId = currentRecord.id;
-                if (currentRecordId !== recordId) {
+                if (currentRecord.id !== recordId) {
                     continue;
                 }
                 this.records[j] = target;
-                for (var k = 0; k < this.scope.rows.length; k++) {
-                    var row = this.scope.rows[k];
-                    if (row.id === recordId) {
-                        this.scope.rows[k] = target;
-                        break;
-                    }
-                }
+                this.loadedRecords[target.id] = true;
                 break;
             }
         }
@@ -334,10 +333,10 @@ var DataChannelController = (function () {
         this.showPage(this.scope.currentPage);
     };
     DataChannelController.createRecordCopy = function (record) {
-        record.loaded = true;
         return record;
     };
     DataChannelController.prototype.showPage = function (page) {
+        var _this = this;
         if (this.scope.updating) {
             return;
         }
@@ -346,7 +345,7 @@ var DataChannelController = (function () {
         this.pageConfiguration.setCurrentPage(page);
         var visibleRecords = this.pageConfiguration.getVisibleRecords(this.records);
         visibleRecords.forEach(function (record) {
-            if (!record.loaded) {
+            if (!_this.loadedRecords[record.id]) {
                 rowIds.push(record.id);
             }
         });
@@ -357,7 +356,12 @@ var DataChannelController = (function () {
         }
         this.scope.currentPage = page;
         visibleRecords.forEach(function (record) {
-            rows.push(record);
+            var row = {
+                id: record.id,
+                showOptions: false,
+                record: record
+            };
+            rows.push(row);
         });
         this.scope.showPagination = this.pageConfiguration.hasPagination();
         this.scope.rows = rows;
@@ -586,7 +590,7 @@ var BindCellDirectiveLink = (function () {
         this.element = element;
         this.scope = scope;
         this.compileService = compileService;
-        this.scope.data = this.scope.column.context(this.scope.row);
+        this.scope.data = this.scope.column.context(this.scope.row.record);
         scope.$watch(function () { return _this.scope.column.template; }, function (newValue, oldValue) {
             _this.updateValue();
         });
@@ -786,11 +790,11 @@ var RecordListDirectiveLink = (function () {
         this.scope.getPageSize = function () { return _this.configuration.pageSize; };
         this.scope.getRecordCount = function () { return _this.dataChannelController.getRecordCount(); };
     };
-    RecordListDirectiveLink.prototype.isActionVisible = function (action, record) {
+    RecordListDirectiveLink.prototype.isActionVisible = function (action, row) {
         if (!this.scope.hasOptionsBar) {
             return false;
         }
-        return !action.visibleFunction || action.visibleFunction(record);
+        return !action.visibleFunction || action.visibleFunction(row.record);
     };
     RecordListDirectiveLink.prototype.loadModel = function (configurator) {
         var _this = this;
@@ -862,7 +866,7 @@ var RecordListDirectiveLink = (function () {
             this.scope.rows[i].showOptions = false;
         }
     };
-    RecordListDirectiveLink.prototype.onClickOptions = function (record, event) {
+    RecordListDirectiveLink.prototype.onClickOptions = function (row, event) {
         if (this.scope.updating) {
             return;
         }
@@ -872,12 +876,12 @@ var RecordListDirectiveLink = (function () {
         if (event && event.target && event.target.nodeName === "A") {
             return;
         }
-        if (!record.showOptions) {
+        if (!row.showOptions) {
             this.hideOptions();
-            record.showOptions = true;
+            row.showOptions = true;
         }
         else {
-            record.showOptions = false;
+            row.showOptions = false;
         }
     };
     RecordListDirectiveLink.prototype.sortColumn = function (column) {
@@ -917,18 +921,18 @@ var RecordListDirectiveLink = (function () {
             return deferred.promise;
         });
     };
-    RecordListDirectiveLink.prototype.executeAction = function (action, record) {
+    RecordListDirectiveLink.prototype.executeAction = function (action, row) {
         var _this = this;
         if (action.name === Constants.MODIFY_RECORD_ACTION) {
-            var recordToEdit = this.dataChannelController.getRecordById(record.id);
-            if (!recordToEdit) {
-                return;
-            }
-            this.editRecord(recordToEdit);
+            this.editRecord(row.record);
             return;
         }
         var actionData = {};
-        actionData.id = record.id;
+        Object.keys(row.record).forEach(function (key) {
+            if (row.record.hasOwnProperty(key)) {
+                actionData[key] = row.record[key];
+            }
+        });
         var sendCommand = function () {
             var deferred = _this.qService.defer();
             if (_this.scope.actionHandler) {
@@ -946,8 +950,8 @@ var RecordListDirectiveLink = (function () {
             if (this.scope.actionHandler) {
                 this.scope.actionHandler(action.name, actionData)
                     .then(function (data) {
-                    _this.configuration.editRecord(data, function (object) {
-                        actionData = object;
+                    _this.configuration.editRecord(data, function (record) {
+                        actionData = record;
                         return sendCommand();
                     });
                 }, function (message) {

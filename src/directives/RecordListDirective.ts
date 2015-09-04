@@ -61,21 +61,21 @@ class RecordListDirectiveLink {
         this.scope.onToggleRecordSearch = () => this.toggleRecordSearch();
         this.scope.onRefreshNewRecords = () => this.dataChannelController.refreshNewRecords();
         this.scope.onToolbarButtonClick = (action: Action) => this.onToolbarButtonClick(action);
-        this.scope.onClickOptions = (record: Record, event) => this.onClickOptions(record, event);
-        this.scope.isActionVisible = (action: Action, record: Record) => this.isActionVisible(action, record);
+        this.scope.onClickOptions = (record: Row, event) => this.onClickOptions(record, event);
+        this.scope.isActionVisible = (action: Action, record: Row) => this.isActionVisible(action, record);
         this.scope.onSortColumn = (column: ColumnDefinition) => this.sortColumn(column);
         this.scope.getColumnLink = (column, row) => RecordListDirectiveLink.extractLink(column.url, row);
-        this.scope.onExecuteAction = (action: Action, record: Record) => this.executeAction(action, record);
+        this.scope.onExecuteAction = (action: Action, record: Row) => this.executeAction(action, record);
         this.scope.onNavigateToLink = (link) => this.configuration.navigate(link);
         this.scope.getPageSize = () => this.configuration.pageSize;
         this.scope.getRecordCount = () => this.dataChannelController.getRecordCount();
     }
 
-    private isActionVisible(action: Action, record: Record) {
+    private isActionVisible(action: Action, row: Row) {
         if (!this.scope.hasOptionsBar) {
             return false;
         }
-        return !action.visibleFunction || action.visibleFunction(record);
+        return !action.visibleFunction || action.visibleFunction(row.record);
     }
 
     private loadModel(configurator: ScopeConfiguration) {
@@ -114,8 +114,8 @@ class RecordListDirectiveLink {
             return;
         }
 
-        this.scope.actionHandler(action.name, null).then((record) => {
-            this.configuration.editRecord(record, (record) => {
+        this.scope.actionHandler(action.name, null).then((record: IRecord) => {
+            this.configuration.editRecord(record, (record: IRecord) => {
 
                 var deferred = this.qService.defer<void>();
 
@@ -161,7 +161,7 @@ class RecordListDirectiveLink {
         }
     }
 
-    private onClickOptions(record: Record, event) {
+    private onClickOptions(row: Row, event) {
 
         if (this.scope.updating) {
             return;
@@ -175,12 +175,12 @@ class RecordListDirectiveLink {
             return;
         }
 
-        if (!record.showOptions) {
+        if (!row.showOptions) {
             this.hideOptions();
-            record.showOptions = true;
+            row.showOptions = true;
 
         } else {
-            record.showOptions = false;
+            row.showOptions = false;
         }
     }
 
@@ -217,9 +217,9 @@ class RecordListDirectiveLink {
         this.dataChannelController.showPage(1);
     }
 
-    private editRecord(record) {
+    private editRecord(record: IRecord) {
 
-        this.configuration.editRecord(record, (record) => {
+        this.configuration.editRecord(record, (record: IRecord) => {
             var deferred: ng.IDeferred<void> = this.qService.defer<void>();
 
             this.dataChannelController.writeRecords([record])
@@ -233,22 +233,20 @@ class RecordListDirectiveLink {
         });
     }
 
-    private executeAction(action: Action, record: Record) {
+    private executeAction(action: Action, row: Row) {
 
         if (action.name === Constants.MODIFY_RECORD_ACTION) {
-
-            var recordToEdit = this.dataChannelController.getRecordById(record.id);
-
-            if (!recordToEdit) {
-                return;
-            }
-
-            this.editRecord(recordToEdit);
+            this.editRecord(row.record);
             return;
         }
 
         var actionData: IRecord = <any>{};
-        actionData.id = record.id;
+
+        Object.keys(row.record).forEach((key: string) => {
+            if (row.record.hasOwnProperty(key)) {
+                actionData[key] = row.record[key];
+            }
+        });
 
         var sendCommand = ():ng.IPromise<void> => {
             var deferred: ng.IDeferred<void> = this.qService.defer<void>();
@@ -267,8 +265,8 @@ class RecordListDirectiveLink {
             if (this.scope.actionHandler) {
                 this.scope.actionHandler(action.name, actionData)
                     .then((data: any) => {
-                        this.configuration.editRecord(data, (object: IRecord) => {
-                            actionData = object;
+                        this.configuration.editRecord(data, (record: IRecord) => {
+                            actionData = record;
                             return sendCommand();
                         });
                     }, (message: string) => {
@@ -290,7 +288,7 @@ class RecordListDirectiveLink {
         }
     }
 
-    private static extractLink(text: string, row: Record) {
+    private static extractLink(text: string, row: Row) {
         var link = text;
         var offset = 0;
         while (true) {
