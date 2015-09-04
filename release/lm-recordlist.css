@@ -5,6 +5,14 @@
 .record-list md-toolbar {
   min-height: inherit; }
 
+.record-list .pagination {
+  margin: 1em 0; }
+  .record-list .pagination button {
+    min-width: 3em;
+    min-height: 1.6em;
+    border-radius: 2em;
+    line-height: inherit; }
+
 .record-list .grid-control .grid-row .grid-cell, .record-list .grid-control .grid-row .grid-header-cell {
   padding: 5px; }
 

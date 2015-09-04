@@ -19,7 +19,7 @@ recordListModule.config(['$translateProvider', function ($translateProvider) {
     }]);
 var templates = {
     "views/optionsBar.jade": "<tr ng-show=\"showOptions\" class=\"options-panel\"><td colspan=\"{{columns.length+1}}\"><md-button ng-disabled=\"!isActionVisible(action)\" ng-repeat=\"action in actions\" ng-bind=\"action.text | translate\" ng-click=\"executeAction(action)\" aria-label=\"action.text | translate\" class=\"md-primary md-raised\"></md-button><span ng-repeat=\"link in links\"><node-link ng-if=\"!link.external\" path=\"{{linkUrl(link)}}\" ng-bind=\"link.text | translate\" class=\"btn btn-info\"></node-link><a ng-if=\"link.external\" href=\"{{linkUrl(link)}}\" ng-bind=\"link.text | translate\" class=\"btn btn-info\"></a></span></td></tr>",
-    "views/paging.jade": "<div layout=\"row\" ng-if=\"showPagination\" class=\"pagination\"><md-button ng-if=\"showFastBackward\" ng-click=\"onFastBackward\" class=\"md-raised\">&laquo;;</md-button><md-button ng-if=\"showBackward\" ng-click=\"onBackward\" class=\"md-raised\">&lsaquo;</md-button><md-button ng-repeat=\"page in pages\" ng-click=\"onPage(page)\" ng-bind=\"page.title\" class=\"md-raised\"></md-button><md-button ng-if=\"showForward\" ng-click=\"onForward\" class=\"md-raised\">&rsaquo;</md-button><md-button ng-if=\"showFastForward\" ng-click=\"onFastForward\" class=\"md-raised\">&raquo;</md-button></div>",
+    "views/paging.jade": "<div layout=\"row\" ng-if=\"showPagination\" class=\"pagination\"><md-button ng-if=\"showFastBackward\" ng-click=\"onFastBackward()\" class=\"md-raised md-mini\">&laquo;;</md-button><md-button ng-if=\"showBackward\" ng-click=\"onBackward()\" class=\"md-raised\">&lsaquo;</md-button><md-button ng-repeat=\"page in pages\" ng-click=\"onPage(page)\" ng-bind=\"page.title\" ng-disabled=\"page.pageNumber === currentPage\" class=\"md-raised\"></md-button><md-button ng-if=\"showForward\" ng-click=\"onForward()\" class=\"md-raised\">&rsaquo;</md-button><md-button ng-if=\"showFastForward\" ng-click=\"onFastForward()\" class=\"md-raised\">&raquo;</md-button></div>",
     "views/recordList.jade": "<div layout=\"column\" class=\"record-list\"><record-list-toolbar></record-list-toolbar><record-list-refresh-panel></record-list-refresh-panel><record-list-pagination page-size=\"getPageSize()\" record-count=\"getRecordCount()\" current-page=\"currentPage\"></record-list-pagination><div ng-class=\"{ 'has-options' : hasOptionsBar, 'grid-refreshing' : updating, 'sortable': columnsSortable }\" layout=\"column\" class=\"grid-control\"><md-toolbar layout=\"row\" class=\"grid-row md-theme-light\"><div ng-repeat=\"column in columns\" md-colspan=\"column.colSpan\" ng-class=\"column.headerClass\" flex=\"column.width\" class=\"grid-header-cell\"><span ng-click=\"sortColumn(column)\" tabindex=\"-1\" role=\"option\" ng-bind=\"column.title | translate\" ng-class=\"{ 'sort-up' : column.sort == 'up', 'sort-down' : column.sort == 'down' }\"></span><span ng-if=\"hasRecordSearch &amp;&amp; $last\" class=\"toggle-search-button\"><ng-button ng-click=\"toggleRecordSearch()\"><span ng-class=\"{ 'glyphicon-chevron-up' : recordSearchVisible, 'glyphicon-search' : !recordSearchVisible }\" class=\"glyphicon\"></span></ng-button></span></div></md-toolbar><div layout=\"row\" class=\"grid-row\"><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" flex=\"flex\" class=\"grid-header-cell\"><input type=\"text\" placeholder=\"Enter text to search\" ng-model=\"getRecordListScope().recordSearchText\" class=\"form-control\"/></div><div ng-if=\"hasRecordSearch\" ng-show=\"recordSearchVisible\" class=\"grid-header-cell\"><ng-button ng-click=\"searchRecords()\"><span class=\"glyphicon glyphicon-search\"></span></ng-button></div></div><div ng-repeat-start=\"row in rows\" ng-class=\"{ 'odd': $odd }\" layout=\"row\" ng-click=\"onClickOptions(row, $event)\" role=\"option\" tabindex=\"-1\" class=\"grid-row\"><div ng-repeat=\"column in columns\" ng-class=\"column.cellClass\" layout=\"row\" flex=\"column.width\" class=\"grid-cell\"><div ng-if=\"hasOptionsBar &amp;&amp; $first\" class=\"grid-cell-options\"><md-icon>more_vert</md-icon></div><span bind-cell=\"column\" row=\"row\" flex=\"flex\"></span></div></div><div layout=\"row\" ng-if=\"hasOptionsBar &amp;&amp; row.showOptions\"><md-button ng-repeat=\"action in actions\" ng-click=\"onExecuteAction(action, row)\" ng-show=\"isActionVisible(action, row)\" aria-label=\"action.title\" class=\"md-raised\"><span ng-bind=\"action.title\"></span></md-button></div><md-divider ng-repeat-end=\"ng-repeat-end\"></md-divider></div><record-list-pagination page-size=\"getPageSize()\" record-count=\"getRecordCount()\" current-page=\"currentPage\"></record-list-pagination><record-list-toolbar></record-list-toolbar></div>",
     "views/refreshPanel.jade": "<div ng-if=\"manualRefresh\" class=\"recordlist-refresh-panel\"><md-button ng-click=\"refreshNewRecords()\" ng-show=\"hasNewRecords\" class=\"md-primary\">{{ 'Main.GetNewRecords' | translate }}</md-button></div>",
     "views/toolBar.jade": "<div class=\"grid-toolbar\"><md-button ng-repeat=\"button in toolbarButtons\" aria-label=\"button.text | translate\" ng-click=\"onToolbarButtonClick(button)\" ng-bind=\"button.text | translate\" class=\"md-default md-raised\"></md-button></div>"
@@ -672,6 +672,9 @@ var PaginationDirectiveLink = (function () {
             }
             _this.scope.currentPage = newPage;
         };
+        scope.onPage = function (page) {
+            _this.scope.currentPage = page.pageNumber;
+        };
         this.updateState();
     }
     PaginationDirectiveLink.prototype.updateState = function () {
@@ -679,7 +682,7 @@ var PaginationDirectiveLink = (function () {
         if (!this.scope.showPagination) {
             return;
         }
-        this.pageCount = (this.scope.recordCount + this.scope.pageSize - 1) / this.scope.pageSize;
+        this.pageCount = Math.floor((this.scope.recordCount + this.scope.pageSize - 1) / this.scope.pageSize);
         if (this.scope.currentPage < 1) {
             this.scope.currentPage = 1;
         }
@@ -707,9 +710,9 @@ var PaginationDirectiveLink = (function () {
                 pageNumber: after
             });
         }
-        this.scope.showBackward = before > 0;
+        this.scope.showBackward = this.scope.currentPage > 1;
         this.scope.showFastBackward = before - 1 > 0;
-        this.scope.showForward = after <= this.pageCount;
+        this.scope.showForward = this.scope.currentPage < this.pageCount;
         this.scope.showFastForward = after + 1 <= this.pageCount;
     };
     return PaginationDirectiveLink;

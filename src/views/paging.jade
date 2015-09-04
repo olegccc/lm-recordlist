@@ -1,6 +1,6 @@
 div.pagination(layout="row" ng-if="showPagination")
-    md-button.md-raised(ng-if="showFastBackward" ng-click="onFastBackward") &laquo;;
-    md-button.md-raised(ng-if="showBackward" ng-click="onBackward") &lsaquo;
-    md-button.md-raised(ng-repeat="page in pages" ng-click="onPage(page)" ng-bind="page.title")
-    md-button.md-raised(ng-if="showForward" ng-click="onForward") &rsaquo;
-    md-button.md-raised(ng-if="showFastForward" ng-click="onFastForward") &raquo;
+    md-button.md-raised.md-mini(ng-if="showFastBackward" ng-click="onFastBackward()") &laquo;;
+    md-button.md-raised(ng-if="showBackward" ng-click="onBackward()") &lsaquo;
+    md-button.md-raised(ng-repeat="page in pages" ng-click="onPage(page)" ng-bind="page.title" ng-disabled="page.pageNumber === currentPage")
+    md-button.md-raised(ng-if="showForward" ng-click="onForward()") &rsaquo;
+    md-button.md-raised(ng-if="showFastForward" ng-click="onFastForward()") &raquo;

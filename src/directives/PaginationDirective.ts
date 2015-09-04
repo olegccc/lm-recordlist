@@ -76,6 +76,10 @@ class PaginationDirectiveLink {
             this.scope.currentPage = newPage;
         };
 
+        scope.onPage = (page: PaginationPage) => {
+            this.scope.currentPage = page.pageNumber;
+        };
+
         this.updateState();
     }
 
@@ -84,7 +88,7 @@ class PaginationDirectiveLink {
         if (!this.scope.showPagination) {
             return;
         }
-        this.pageCount = (this.scope.recordCount + this.scope.pageSize-1) / this.scope.pageSize;
+        this.pageCount = Math.floor((this.scope.recordCount + this.scope.pageSize-1) / this.scope.pageSize);
         if (this.scope.currentPage < 1) {
             this.scope.currentPage = 1;
         } else if (this.scope.currentPage > this.pageCount) {
@@ -111,9 +115,9 @@ class PaginationDirectiveLink {
                 pageNumber: after
             });
         }
-        this.scope.showBackward = before > 0;
+        this.scope.showBackward = this.scope.currentPage > 1;
         this.scope.showFastBackward = before-1 > 0;
-        this.scope.showForward = after <= this.pageCount;
+        this.scope.showForward = this.scope.currentPage < this.pageCount;
         this.scope.showFastForward = after+1 <= this.pageCount;
     }
 }

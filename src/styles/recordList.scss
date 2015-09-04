@@ -5,13 +5,27 @@ $cell-padding: 5px;
 $options-panel-background: #aaa;
 
 .record-list {
+
   .grid-refreshing {
     opacity: 0.4;
     cursor: wait;
   }
+
   md-toolbar {
     min-height: inherit;
   }
+
+  .pagination {
+    margin: 1em 0;
+
+    button {
+      min-width: 3em;
+      min-height: 1.6em;
+      border-radius: 2em;
+      line-height: inherit;
+    }
+  }
+
   .grid-control {
     .grid-row {
       .grid-cell, .grid-header-cell {
